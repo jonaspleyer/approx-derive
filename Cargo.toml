@@ -1,0 +1,16 @@
+[package]
+name = "approx-derive"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+proc-macro = true
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+proc-macro2 = "1.0.81"
+quote = "1.0.36"
+syn = { version = "2.0.60", features = ["default", "full"] }
+
+[dev-dependencies]
+approx = "0.5.1"
