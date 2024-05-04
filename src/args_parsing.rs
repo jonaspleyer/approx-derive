@@ -70,7 +70,6 @@ impl FieldKeyValueArg {
 pub struct StructArgs {
     pub epsilon_type: Option<syn::Type>,
     pub default_epsilon_value: Option<syn::Expr>,
-    pub max_relative_type: Option<syn::Type>,
     pub default_max_relative_value: Option<syn::Expr>,
 }
 
@@ -109,7 +108,6 @@ impl StructValueArg {
 pub enum StructKeyValueArg {
     EpsilonType(syn::Type),
     DefaultEpsilon(syn::Expr),
-    MaxRelativeType(syn::Type),
     DefaultMaxRelative(syn::Expr),
 }
 
@@ -118,7 +116,6 @@ impl StructKeyValueArg {
         match keyword.to_string().as_str() {
             "epsilon_type" => Ok(Self::EpsilonType(input.parse()?)),
             "default_epsilon" => Ok(Self::DefaultEpsilon(input.parse()?)),
-            "max_relative_type" => Ok(Self::MaxRelativeType(input.parse()?)),
             "default_max_relative" => Ok(Self::DefaultMaxRelative(input.parse()?)),
             _ => Err(syn::Error::new(keyword.span(), "Not a valid keyword")),
         }
@@ -149,7 +146,6 @@ impl StructArgs {
     pub fn from_attrs(attributes: &Vec<syn::Attribute>) -> syn::Result<Self> {
         let mut epsilon_type = None;
         let mut default_epsilon_value = None;
-        let mut max_relative_type = None;
         let mut default_max_relative_value = None;
         for attribute in attributes.iter() {
             let arg: StructArgGeneric = attribute.parse_args()?;
@@ -161,9 +157,6 @@ impl StructArgs {
                 StructArgGeneric::KeyValue(StructKeyValueArg::DefaultEpsilon(default_eps)) => {
                     default_epsilon_value = Some(default_eps)
                 }
-                StructArgGeneric::KeyValue(StructKeyValueArg::MaxRelativeType(max_rel_type)) => {
-                    max_relative_type = Some(max_rel_type);
-                }
                 StructArgGeneric::KeyValue(StructKeyValueArg::DefaultMaxRelative(
                     default_max_rel,
                 )) => {
@@ -174,7 +167,6 @@ impl StructArgs {
         Ok(Self {
             epsilon_type,
             default_epsilon_value,
-            max_relative_type,
             default_max_relative_value,
         })
     }
