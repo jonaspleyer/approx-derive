@@ -136,8 +136,8 @@
 //! // b field values.
 //! approx::assert_abs_diff_ne!(r1, r2, epsilon = 1e-4);
 //! ```
-//!
-//! ## Default Epsilon
+//! ## Struct Attributes
+//! ### Default Epsilon
 //! The [AbsDiffEq] trait allows to specify a default value for its `EPSILON` associated type.
 //! We can control this value by specifying it on a struct level.
 //!
@@ -165,7 +165,7 @@
 //! approx::assert_abs_diff_ne!(benchmark1, benchmark2, epsilon = 5);
 //! ```
 //!
-//! ## Default Max Relative
+//! ### Default Max Relative
 //! Similarly to [Default Epsilon], we can also choose a default max_relative devaition.
 //! ```
 //! # use approx_derive::*;
@@ -188,7 +188,34 @@
 //! approx::assert_relative_eq!(bench1, bench2);
 //! approx::assert_relative_ne!(bench1, bench2, max_relative = 0.05);
 //! ```
+//! ### Epsilon Type
+//! When specifying nothing, the macros will infer the `EPSILON` type from the type of the
+//! first struct field.
+//! This can be problematic in certain scenarios which is why we can also manually specify this
+//! type.
 //!
+//! ```
+//! # use approx_derive::*;
+//! #[derive(RelativeEq, PartialEq, Debug)]
+//! #[approx(epsilon_type = f32)]
+//! struct Car {
+//!     #[approx(cast_field)]
+//!     produced_year: u32,
+//!     horse_power: f32,
+//! }
+//!
+//! let car1 = Car {
+//!     produced_year: 1992,
+//!     horse_power: 122.87,
+//! };
+//! let car2 = Car {
+//!     produced_year: 2000,
+//!     horse_power: 117.45,
+//! };
+//!
+//! approx::assert_relative_eq!(car1, car2, max_relative = 0.05);
+//! approx::assert_relative_ne!(car1, car2, max_relative = 0.01);
+//! ```
 
 mod args_parsing;
 use args_parsing::*;
