@@ -7,8 +7,8 @@
 
 `approx-derive` extends the popular [`approx`](https://docs.rs/approx/latest/approx/)
 by two derive macros `AbsDiffEq` and `RelativeEq`.
-This allows to quickly derive implementations for testing with the known macros provided in
-[`approx`](https://docs.rs/approx/latest/approx/).
+This allows to quickly derive implementations for comparing these types with the macros provided in
+[`approx`](https://docs.rs/approx/latest/approx/) crate.
 
 # Documentation
 Visit [docs.rs/approx_derive/latest/approx_derive].
