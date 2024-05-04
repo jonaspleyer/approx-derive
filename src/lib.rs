@@ -1,23 +1,110 @@
-//! # Epsilon Type
-//! ```
+//! This crate provides derive macros for the [AbsDiffEq] and [RelativeEq] traits of the 
+//! [approx](https://docs.rs/approx/latest/approx/) crate.
 //!
 //! ```
+//! use approx_derive::AbsDiffEq;
 //!
-//! # Default Epsilon
+//! // Define a new type and derive the AbsDiffEq trait
+//! #[derive(AbsDiffEq, PartialEq, Debug)]
+//! struct Position {
+//!     x: f64,
+//!     y: f64
+//! }
 //!
+//! // Compare if two given positions match
+//! // with respect to geiven epsilon.
+//! let p1 = Position { x: 1.01, y: 2.36 };
+//! let p2 = Position { x: 0.99, y: 2.38 };
+//! approx::assert_abs_diff_eq!(p1, p2, epsilon = 0.021);
 //! ```
 //!
+//! # General Usage
+//! The macros infer the `EPSILON` type of the [AbsDiffEq] trait by looking
+//! at the type of the first struct field or any type specified by the user.
+//!
+//! ## Skipping Fields
+//!
+//! Sometimes, we only want to compare certain fields and omit others completely.
+//! ```
+//! # use approx_derive::*;
+//! #[derive(AbsDiffEq, PartialEq, Debug)]
+//! struct Player {
+//!     hit_points: f32,
+//!     pos_x: f32,
+//!     pos_y: f32,
+//!     #[approx(skip)]
+//!     id: (usize, usize),
+//! }
+//!
+//! let player1 = Player {
+//!     hit_points: 100.0,
+//!     pos_x: 2.0,
+//!     pos_y: -650.345,
+//!     id: (0, 1),
+//! };
+//!
+//! let player2 = Player {
+//!     hit_points: 99.9,
+//!     pos_x: 2.001,
+//!     pos_y: -649.898,
+//!     id: (22, 0),
+//! };
+//!
+//! approx::assert_abs_diff_eq!(player1, player2, epsilon = 0.5);
 //! ```
 //!
-//! # Casting
+//! ## Casting Fields
+//!
+//! Structs which consist of multiple fields with different
+//! numeric types, can not be derived without additional hints.
+//! After all, we should specify how this type mismatch will be handles.
+//!
 //! ```compile_fail
 //! # use approx_derive::*;
 //! #[derive(AbsDiffEq, PartialEq, Debug)]
-//! struct MyStrct {
+//! struct MyStruct {
 //!     v1: f32,
 //!     v2: f64,
 //! }
 //! ```
+//!
+//! We can use the `#[approx(cast_field)]` and `#[approx(cast_value)]`
+//! attributes to achieve this goal.
+//! ```
+//! # use approx_derive::*;
+//! #[derive(AbsDiffEq, PartialEq, Debug)]
+//! struct MyStruct {
+//!     v1: f32,
+//!     #[approx(cast_field)]
+//!     v2: f64,
+//! }
+//! ```
+//! Now the second field will be casted to the type of the inferred epsilon value (`f32`).
+//! We can check this by testing if a change in the size of `f64::MIN_POSITIVE` would get lost by
+//! this procedure.
+//! ```
+//! # use approx_derive::*;
+//! # #[derive(AbsDiffEq, PartialEq, Debug)]
+//! # struct MyStruct {
+//! #   v1: f32,
+//! #   #[approx(cast_field)]
+//! #   v2: f64,
+//! # }
+//! let ms1 = MyStruct {
+//!     v1: 1.0,
+//!     v2: 3.0,
+//! };
+//! let ms2 = MyStruct {
+//!     v1: 1.0,
+//!     v2: 3.0 + f64::MIN_POSITIVE,
+//! };
+//! approx::assert_abs_diff_eq!(ms1, ms2);
+//! ```
+//!
+//! ## Default Epsilon
+//!
+//! ## Default Max Relative
+//!
 
 mod args_parsing;
 use args_parsing::*;
@@ -269,12 +356,14 @@ impl AbsDiffEqParser {
     }
 }
 
+/// See the [crate] level documentation for a guide.
 #[proc_macro_derive(AbsDiffEq, attributes(approx))]
 pub fn derive_abs_diff_eq(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let parsed = syn::parse_macro_input!(input as AbsDiffEqParser);
     parsed.implement_derive_abs_diff_eq().into()
 }
 
+/// See the [crate] level documentation for a guide.
 #[proc_macro_derive(RelativeEq, attributes(approx))]
 pub fn derive_rel_diff_eq(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let parsed = syn::parse_macro_input!(input as AbsDiffEqParser);
