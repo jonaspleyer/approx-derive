@@ -11,5 +11,5 @@ This allows to quickly derive implementations for comparing these types with the
 [`approx`](https://docs.rs/approx/latest/approx/) crate.
 
 # Documentation
-Visit [https://docs.rs/approx_derive/latest/approx_derive].
+Visit [docs.rs](https://docs.rs/approx-derive/latest/approx_derive/) to view the documentation.
 
