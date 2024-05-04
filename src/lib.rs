@@ -1,4 +1,4 @@
-//! This crate provides derive macros for the [AbsDiffEq] and [RelativeEq] traits of the 
+//! This crate provides derive macros for the [AbsDiffEq] and [RelativeEq] traits of the
 //! [approx](https://docs.rs/approx/latest/approx/) crate.
 //!
 //! ```
