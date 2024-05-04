@@ -33,6 +33,19 @@ fn derive_rel_diff_eq_skip() {
 }
 
 #[test]
+fn derive_rel_diff_eq_skip_infer_epsilon_type() {
+    #[derive(RelativeEq, PartialEq, Debug)]
+    struct MyStruct {
+        #[approx(skip)]
+        id: u8,
+        value: f32,
+    }
+    let ms1 = MyStruct { id: 1, value: 1.0 };
+    let ms2 = MyStruct { id: 9, value: 1.1 };
+    approx::assert_relative_eq!(ms1, ms2, max_relative = 0.2);
+}
+
+#[test]
 fn derive_rel_diff_eq_cast_field() {
     #[derive(RelativeEq, PartialEq, Debug)]
     struct MyStruct {
