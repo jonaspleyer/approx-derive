@@ -258,10 +258,14 @@ impl AbsDiffEqParser {
             .clone()
             .and_then(|x| Some(quote::quote!(#x)))
             .or_else(|| {
-                self.fields_with_args.first().and_then(|field| {
-                    let eps_type = &field.field.ty;
-                    Some(quote::quote!(#eps_type))
-                })
+                self.fields_with_args
+                    .iter()
+                    .filter(|field| field.args.skip == false)
+                    .next()
+                    .and_then(|field| {
+                        let eps_type = &field.field.ty;
+                        Some(quote::quote!(#eps_type))
+                    })
             })
             .or_else(|| Some(quote::quote!(f64)))
             .unwrap()
