@@ -22,7 +22,8 @@
 //! The macros infer the `EPSILON` type of the [AbsDiffEq] trait by looking
 //! at the type of the first struct field or any type specified by the user.
 //!
-//! ## Skipping Fields
+//! ## Field Attributes
+//! ### Skipping Fields
 //!
 //! Sometimes, we only want to compare certain fields and omit others completely.
 //! ```
@@ -53,11 +54,11 @@
 //! approx::assert_abs_diff_eq!(player1, player2, epsilon = 0.5);
 //! ```
 //!
-//! ## Casting Fields
+//! ### Casting Fields
 //!
 //! Structs which consist of multiple fields with different
 //! numeric types, can not be derived without additional hints.
-//! After all, we should specify how this type mismatch will be handles.
+//! After all, we should specify how this type mismatch will be handled.
 //!
 //! ```compile_fail
 //! # use approx_derive::*;
@@ -84,7 +85,7 @@
 //! this procedure.
 //! ```
 //! # use approx_derive::*;
-//! # #[derive(AbsDiffEq, PartialEq, Debug)]
+//! # #[derive(RelativeEq, PartialEq, Debug)]
 //! # struct MyStruct {
 //! #   v1: f32,
 //! #   #[approx(cast_field)]
@@ -98,12 +99,95 @@
 //!     v1: 1.0,
 //!     v2: 3.0 + f64::MIN_POSITIVE,
 //! };
-//! approx::assert_abs_diff_eq!(ms1, ms2);
+//! approx::assert_relative_eq!(ms1, ms2);
+//! ```
+//!
+//! ### Static Values
+//! We can force a static `EPSILON` or `max_relative` value for individual fields.
+//! ```
+//! # use approx_derive::*;
+//! #[derive(AbsDiffEq, PartialEq, Debug)]
+//! struct Rectangle {
+//!     #[approx(static_epsilon = 5e-2)]
+//!     a: f64,
+//!     b: f64,
+//!     #[approx(static_epsilon = 7e-2)]
+//!     c: f64,
+//! }
+//!
+//! let r1 = Rectangle {
+//!     a: 100.01,
+//!     b: 40.0001,
+//!     c: 30.055,
+//! };
+//! let r2 = Rectangle {
+//!     a: 99.97,
+//!     b: 40.0005,
+//!     c: 30.049,
+//! };
+//!
+//! // This is always true although the epsilon is smaller than the
+//! // difference between fields a and b respectively.
+//! approx::assert_abs_diff_eq!(r1, r2, epsilon = 1e-1);
+//! approx::assert_abs_diff_eq!(r1, r2, epsilon = 1e-2);
+//! approx::assert_abs_diff_eq!(r1, r2, epsilon = 1e-3);
+//!
+//! // Here, the epsilon value has become larger than the difference between the
+//! // b field values.
+//! approx::assert_abs_diff_ne!(r1, r2, epsilon = 1e-4);
 //! ```
 //!
 //! ## Default Epsilon
+//! The [AbsDiffEq] trait allows to specify a default value for its `EPSILON` associated type.
+//! We can control this value by specifying it on a struct level.
+//!
+//! ```
+//! # use approx_derive::*;
+//! #[derive(AbsDiffEq, PartialEq, Debug)]
+//! #[approx(default_epsilon = 10)]
+//! struct Benchmark {
+//!     cycles: u64,
+//!     warm_up: u64,
+//! }
+//!
+//! let benchmark1 = Benchmark {
+//!     cycles: 248,
+//!     warm_up: 36,
+//! };
+//! let benchmark2 = Benchmark {
+//!     cycles: 239,
+//!     warm_up: 28,
+//! };
+//!
+//! // When testing with not additional arguments, the results match
+//! approx::assert_abs_diff_eq!(benchmark1, benchmark2);
+//! // Once we specify a lower epsilon, the values do not agree anymore.
+//! approx::assert_abs_diff_ne!(benchmark1, benchmark2, epsilon = 5);
+//! ```
 //!
 //! ## Default Max Relative
+//! Similarly to [Default Epsilon], we can also choose a default max_relative devaition.
+//! ```
+//! # use approx_derive::*;
+//! #[derive(RelativeEq, PartialEq, Debug)]
+//! #[approx(default_max_relative = 0.1)]
+//! struct Benchmark {
+//!     time: f32,
+//!     warm_up: f32,
+//! }
+//!
+//! let bench1 = Benchmark {
+//!     time: 3.502785781,
+//!     warm_up: 0.58039458,
+//! };
+//! let bench2 = Benchmark {
+//!     time: 3.7023458,
+//!     warm_up: 0.59015897,
+//! };
+//!
+//! approx::assert_relative_eq!(bench1, bench2);
+//! approx::assert_relative_ne!(bench1, bench2, max_relative = 0.05);
+//! ```
 //!
 
 mod args_parsing;
