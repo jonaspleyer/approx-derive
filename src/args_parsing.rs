@@ -3,20 +3,6 @@ pub enum TypeCast {
     CastValue,
 }
 
-impl syn::parse::Parse for TypeCast {
-    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
-        let ident: syn::Ident = input.parse()?;
-        match ident.to_string().to_lowercase().as_str() {
-            "cast_field" => Ok(Self::CastField),
-            "cast_value" => Ok(Self::CastValue),
-            _ => Err(syn::Error::new(
-                ident.span(),
-                "Not a valid keyword for approx_derive.",
-            )),
-        }
-    }
-}
-
 /// Represents a field in a struct definition
 pub struct FieldWithArgs {
     pub field: syn::Field,
