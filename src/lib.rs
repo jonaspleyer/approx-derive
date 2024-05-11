@@ -1,5 +1,13 @@
-//! This crate provides derive macros for the [AbsDiffEq] and [RelativeEq] traits of the
+//! This crate provides derive macros for the
+//! [AbsDiffEq](https://docs.rs/approx/latest/approx/trait.AbsDiffEq.html) and 
+//! [RelativeEq](https://docs.rs/approx/latest/approx/trait.RelativeEq.html) traits of the
 //! [approx](https://docs.rs/approx/latest/approx/) crate.
+//!
+//! These derive macros only implement both traits with `...<Rhs = Self>`.
+//! The macros infer the `EPSILON` type of the [AbsDiffEq] trait by looking
+//! at the type of the first struct field or any type specified by the user.
+//!
+//! The following example explains a possible use-case.
 //!
 //! ```
 //! use approx_derive::AbsDiffEq;
@@ -17,13 +25,28 @@
 //! let p2 = Position { x: 0.99, y: 2.38 };
 //! approx::assert_abs_diff_eq!(p1, p2, epsilon = 0.021);
 //! ```
+//! In this case, the generated code looks something like this:
+//! ```
+//! const _ : () =
+//! {
+//!     #[automatically_derived] impl approx :: AbsDiffEq for Position
+//!     {
+//!         type Epsilon = f64; fn default_epsilon() -> Self :: Epsilon
+//!         { f64 :: EPSILON } fn
+//!         abs_diff_eq(& self, other : & Self, epsilon : Self :: Epsilon) -> bool
+//!         {
+//!             < f64 as approx :: AbsDiffEq > ::
+//!             abs_diff_eq(& self.x, & other.x, epsilon) && < f64 as approx ::
+//!             AbsDiffEq > :: abs_diff_eq(& self.y, & other.y, epsilon) && true
+//!         }
+//!     }
+//! };
+//! ```
+//! The [AbsDiffEq] derive macro calls the `abs_diff_eq` method repeatedly on all fields
+//! to determine if all are matching.
 //!
-//! # General Usage
-//! The macros infer the `EPSILON` type of the [AbsDiffEq] trait by looking
-//! at the type of the first struct field or any type specified by the user.
-//!
-//! ## Field Attributes
-//! ### Skipping Fields
+//! # Field Attributes
+//! ## Skipping Fields
 //!
 //! Sometimes, we only want to compare certain fields and omit others completely.
 //! ```
@@ -54,7 +77,7 @@
 //! approx::assert_abs_diff_eq!(player1, player2, epsilon = 0.5);
 //! ```
 //!
-//! ### Casting Fields
+//! ## Casting Fields
 //!
 //! Structs which consist of multiple fields with different
 //! numeric types, can not be derived without additional hints.
@@ -102,7 +125,7 @@
 //! approx::assert_relative_eq!(ms1, ms2);
 //! ```
 //!
-//! ### Static Values
+//! ## Static Values
 //! We can force a static `EPSILON` or `max_relative` value for individual fields.
 //! ```
 //! # use approx_derive::*;
@@ -136,8 +159,8 @@
 //! // b field values.
 //! approx::assert_abs_diff_ne!(r1, r2, epsilon = 1e-4);
 //! ```
-//! ## Struct Attributes
-//! ### Default Epsilon
+//! # Struct Attributes
+//! ## Default Epsilon
 //! The [AbsDiffEq] trait allows to specify a default value for its `EPSILON` associated type.
 //! We can control this value by specifying it on a struct level.
 //!
@@ -165,7 +188,7 @@
 //! approx::assert_abs_diff_ne!(benchmark1, benchmark2, epsilon = 5);
 //! ```
 //!
-//! ### Default Max Relative
+//! ## Default Max Relative
 //! Similarly to [Default Epsilon], we can also choose a default max_relative devaition.
 //! ```
 //! # use approx_derive::*;
@@ -188,7 +211,7 @@
 //! approx::assert_relative_eq!(bench1, bench2);
 //! approx::assert_relative_ne!(bench1, bench2, max_relative = 0.05);
 //! ```
-//! ### Epsilon Type
+//! ## Epsilon Type
 //! When specifying nothing, the macros will infer the `EPSILON` type from the type of the
 //! first struct field.
 //! This can be problematic in certain scenarios which is why we can also manually specify this
