@@ -113,3 +113,27 @@ fn derive_abs_diff_eq_tuple_struct() {
     approx::assert_abs_diff_ne!(p1, p2);
     approx::assert_abs_diff_eq!(p1, p2, epsilon = 1.0);
 }
+
+#[test]
+fn derive_abs_diff_eq_generics() {
+    #[derive(AbsDiffEq, PartialEq, Debug)]
+    struct GenericPosition<F> {
+        x: F,
+        y: F,
+    }
+    let p1 = GenericPosition { x: 1.0, y: 2.0 };
+    let p2 = GenericPosition {
+        x: 1.00001,
+        y: 1.99999,
+    };
+    approx::assert_abs_diff_eq!(p1, p2, epsilon = 0.00002);
+}
+
+#[test]
+fn derive_abs_diff_eq_generics_tuple() {
+    #[derive(AbsDiffEq, PartialEq, Debug)]
+    struct GenericPos<F>(F, F);
+    let p1 = GenericPos(1_f32, 33_f32);
+    let p2 = GenericPos(1_f32, 32_f32);
+    approx::assert_abs_diff_ne!(p1, p2);
+}
