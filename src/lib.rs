@@ -330,7 +330,11 @@ impl AbsDiffEqParser {
             .unwrap()
     }
 
-    fn format_field(&self, field_with_args: &FieldWithArgs) -> Option<FieldFormatted> {
+    fn format_nth_field(
+        &self,
+        n: usize,
+        field_with_args: &FieldWithArgs,
+    ) -> Option<FieldFormatted> {
         // Determine if this field will be skipped and exit early
         if field_with_args.args.skip {
             return None;
@@ -340,8 +344,12 @@ impl AbsDiffEqParser {
         let epsilon_type = self.get_epsilon_type();
 
         // Save field name and type in variables for easy access
-        let field_name = &field_with_args.field.ident;
-        let field_type = &field_with_args.field.ty;
+        use std::str::FromStr;
+        let field_name = match &field_with_args.ident {
+            Some(id) => quote::quote!(#id),
+            None => proc_macro2::TokenStream::from_str(&format!("{}", n)).unwrap(),
+        };
+        let field_type = &field_with_args.ty;
 
         // Determine if the field or the value will be casted in any way
         let cast_strategy = &field_with_args.args.cast_strategy;
@@ -399,52 +407,60 @@ impl AbsDiffEqParser {
 
     fn get_abs_diff_eq_fields(&self) -> Vec<proc_macro2::TokenStream> {
         // We need to extend the where clause for all generics
-        let fields = self.fields_with_args.iter().filter_map(|field_with_args| {
-            if let Some(FieldFormatted {
-                base_type,
-                own_field,
-                other_field,
-                epsilon,
-                #[allow(unused)]
-                max_relative,
-            }) = self.format_field(field_with_args)
-            {
-                Some(quote::quote!(
-                    <#base_type as approx::AbsDiffEq>::abs_diff_eq(
-                        #own_field,
-                        #other_field,
-                        #epsilon
-                    ) &&
-                ))
-            } else {
-                None
-            }
-        });
+        let fields = self
+            .fields_with_args
+            .iter()
+            .enumerate()
+            .filter_map(|(n, field_with_args)| {
+                if let Some(FieldFormatted {
+                    base_type,
+                    own_field,
+                    other_field,
+                    epsilon,
+                    #[allow(unused)]
+                    max_relative,
+                }) = self.format_nth_field(n, field_with_args)
+                {
+                    Some(quote::quote!(
+                        <#base_type as approx::AbsDiffEq>::abs_diff_eq(
+                            #own_field,
+                            #other_field,
+                            #epsilon
+                        ) &&
+                    ))
+                } else {
+                    None
+                }
+            });
         fields.collect()
     }
 
     fn get_rel_eq_fields(&self) -> Vec<proc_macro2::TokenStream> {
-        let fields = self.fields_with_args.iter().filter_map(|field_with_args| {
-            if let Some(FieldFormatted {
-                base_type,
-                own_field,
-                other_field,
-                epsilon,
-                max_relative,
-            }) = self.format_field(field_with_args)
-            {
-                Some(quote::quote!(
-                    <#base_type as approx::RelativeEq>::relative_eq(
-                        #own_field,
-                        #other_field,
-                        #epsilon,
-                        #max_relative
-                    ) &&
-                ))
-            } else {
-                None
-            }
-        });
+        let fields = self
+            .fields_with_args
+            .iter()
+            .enumerate()
+            .filter_map(|(n, field_with_args)| {
+                if let Some(FieldFormatted {
+                    base_type,
+                    own_field,
+                    other_field,
+                    epsilon,
+                    max_relative,
+                }) = self.format_nth_field(n, field_with_args)
+                {
+                    Some(quote::quote!(
+                        <#base_type as approx::RelativeEq>::relative_eq(
+                            #own_field,
+                            #other_field,
+                            #epsilon,
+                            #max_relative
+                        ) &&
+                    ))
+                } else {
+                    None
+                }
+            });
         fields.collect()
     }
 
