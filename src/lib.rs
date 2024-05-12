@@ -251,13 +251,25 @@ struct AbsDiffEqParser {
 
 impl syn::parse::Parse for AbsDiffEqParser {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+        use syn::spanned::Spanned;
         let item_struct: syn::ItemStruct = input.parse()?;
         let struct_args = StructArgs::from_attrs(&item_struct.attrs)?;
-        let fields_with_args = item_struct
-            .fields
-            .iter()
-            .map(|field| FieldWithArgs::from_field(field))
-            .collect::<syn::Result<Vec<_>>>()?;
+        let fields_with_args = match item_struct.fields.clone() {
+            syn::Fields::Named(named_fields) => named_fields
+                .named
+                .iter()
+                .map(|field| FieldWithArgs::from_field(field))
+                .collect::<syn::Result<Vec<_>>>(),
+            syn::Fields::Unnamed(unnamed_fields) => unnamed_fields
+                .unnamed
+                .iter()
+                .map(|field| FieldWithArgs::from_field(field))
+                .collect::<syn::Result<Vec<_>>>(),
+            syn::Fields::Unit => Err(syn::Error::new(
+                item_struct.span(),
+                "cannot derive from unit struct",
+            )),
+        }?;
         Ok(Self {
             item_struct,
             fields_with_args,
