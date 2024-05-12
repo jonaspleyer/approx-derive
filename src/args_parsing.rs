@@ -5,15 +5,17 @@ pub enum TypeCast {
 
 /// Represents a field in a struct definition
 pub struct FieldWithArgs {
-    pub field: syn::Field,
+    pub ident: Option<syn::Ident>,
+    pub ty: syn::Type,
     pub args: FieldArgs,
 }
 
 impl FieldWithArgs {
     pub fn from_field(field: &syn::Field) -> syn::Result<Self> {
-        let field = field.clone();
+        let ident = field.ident.clone();
+        let ty = field.ty.clone();
         let args = FieldArgs::from_attrs(&field.attrs)?;
-        Ok(Self { field, args })
+        Ok(Self { ident, ty, args })
     }
 }
 

@@ -286,7 +286,7 @@ impl AbsDiffEqParser {
                     .filter(|field| field.args.skip == false)
                     .next()
                     .and_then(|field| {
-                        let eps_type = &field.field.ty;
+                        let eps_type = &field.ty;
                         Some(quote::quote!(#eps_type))
                     })
             })
