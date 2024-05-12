@@ -321,9 +321,18 @@ impl AbsDiffEqParser {
             .default_epsilon_value
             .clone()
             .and_then(|x| Some(quote::quote!(#x)))
-            .or_else(|| Some(quote::quote!(#epsilon_type::EPSILON)))
+            .or_else(|| Some(quote::quote!(<#parent as approx::AbsDiffEq>::default_epsilon())))
             .unwrap();
         (epsilon_type, epsilon_default_value)
+    }
+
+    fn generics_involved(&self) -> bool {
+        let parent = self.get_epsilon_parent_type();
+        self.item_struct
+            .generics
+            .params
+            .iter()
+            .any(|param| quote::quote!(#param).to_string() == parent.to_string())
     }
 
     fn get_max_relative_default_value(&self) -> proc_macro2::TokenStream {
@@ -332,7 +341,9 @@ impl AbsDiffEqParser {
             .default_max_relative_value
             .clone()
             .and_then(|x| Some(quote::quote!(#x)))
-            .or_else(|| Some(quote::quote!(#epsilon_type::EPSILON)))
+            .or_else(|| {
+                Some(quote::quote!(<#epsilon_type as approx::RelativeEq>::default_max_relative()))
+            })
             .unwrap()
     }
 
@@ -379,24 +390,24 @@ impl AbsDiffEqParser {
         // Use the casting strategy
         let (base_type, own_field, other_field, epsilon, max_relative) = match cast_strategy {
             Some(TypeCast::CastField) => (
-                quote::quote!(#epsilon),
                 quote::quote!(#parent_type),
                 quote::quote!(&(self.#field_name as #parent_type)),
                 quote::quote!(&(other.#field_name as #parent_type)),
+                quote::quote!(#epsilon.clone()),
                 quote::quote!(#max_relative),
             ),
             Some(TypeCast::CastValue) => (
                 quote::quote!(#field_type),
                 quote::quote!(&self.#field_name),
                 quote::quote!(&other.#field_name),
-                quote::quote!(#epsilon as #field_type),
+                quote::quote!(#epsilon.clone() as #field_type),
                 quote::quote!(#max_relative as #field_type),
             ),
             None => (
                 quote::quote!(#parent_type),
                 quote::quote!(&self.#field_name),
                 quote::quote!(&other.#field_name),
-                quote::quote!(#epsilon),
+                quote::quote!(#epsilon.clone()),
                 quote::quote!(#max_relative),
             ),
         };
@@ -475,6 +486,25 @@ impl AbsDiffEqParser {
         let (epsilon_type, epsilon_default_value) = self.get_epsilon_type_and_default_value();
         let fields = self.get_abs_diff_eq_fields();
         let (impl_generics, ty_generics, where_clause) = self.item_struct.generics.split_for_impl();
+        let where_clause = if self.generics_involved() {
+            let parent = self.get_epsilon_parent_type();
+            match where_clause {
+                Some(clause) => quote::quote!(
+                    #clause
+                        #parent: approx::AbsDiffEq,
+                        #parent: PartialEq,
+                        #epsilon_type: Clone,
+                ),
+                None => quote::quote!(
+                where
+                    #parent: approx::AbsDiffEq,
+                    #parent: PartialEq,
+                    #epsilon_type: Clone,
+                ),
+            }
+        } else {
+            quote::quote!(#where_clause)
+        };
 
         quote::quote!(
             const _ : () = {
