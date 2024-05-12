@@ -1,5 +1,5 @@
 //! This crate provides derive macros for the
-//! [AbsDiffEq](https://docs.rs/approx/latest/approx/trait.AbsDiffEq.html) and 
+//! [AbsDiffEq](https://docs.rs/approx/latest/approx/trait.AbsDiffEq.html) and
 //! [RelativeEq](https://docs.rs/approx/latest/approx/trait.RelativeEq.html) traits of the
 //! [approx](https://docs.rs/approx/latest/approx/) crate.
 //!
@@ -26,7 +26,7 @@
 //! approx::assert_abs_diff_eq!(p1, p2, epsilon = 0.021);
 //! ```
 //! In this case, the generated code looks something like this:
-//! ```
+//! ```ignore
 //! const _ : () =
 //! {
 //!     #[automatically_derived] impl approx :: AbsDiffEq for Position
