@@ -287,7 +287,7 @@ struct FieldFormatted {
 }
 
 impl AbsDiffEqParser {
-    fn get_epsilon_type(&self) -> proc_macro2::TokenStream {
+    fn get_epsilon_parent_type(&self) -> proc_macro2::TokenStream {
         self.struct_args
             .epsilon_type
             .clone()
@@ -298,18 +298,24 @@ impl AbsDiffEqParser {
                     .filter(|field| field.args.skip == false)
                     .next()
                     .and_then(|field| {
-                        let eps_type = &field.ty;
-                        Some(quote::quote!(#eps_type))
+                        let field_type = &field.ty;
+                        Some(quote::quote!(#field_type))
                     })
             })
             .or_else(|| Some(quote::quote!(f64)))
             .unwrap()
     }
 
+    fn get_derived_epsilon_type(&self) -> proc_macro2::TokenStream {
+        let parent = self.get_epsilon_parent_type();
+        quote::quote!(<#parent as approx::AbsDiffEq>::Epsilon)
+    }
+
     fn get_epsilon_type_and_default_value(
         &self,
     ) -> (proc_macro2::TokenStream, proc_macro2::TokenStream) {
-        let epsilon_type = self.get_epsilon_type();
+        let parent = self.get_epsilon_parent_type();
+        let epsilon_type = self.get_derived_epsilon_type();
         let epsilon_default_value = self
             .struct_args
             .default_epsilon_value
@@ -321,7 +327,7 @@ impl AbsDiffEqParser {
     }
 
     fn get_max_relative_default_value(&self) -> proc_macro2::TokenStream {
-        let epsilon_type = self.get_epsilon_type();
+        let epsilon_type = self.get_epsilon_parent_type();
         self.struct_args
             .default_max_relative_value
             .clone()
@@ -341,7 +347,7 @@ impl AbsDiffEqParser {
         }
 
         // Get types for epsilon and max_relative
-        let epsilon_type = self.get_epsilon_type();
+        let parent_type = self.get_epsilon_parent_type();
 
         // Save field name and type in variables for easy access
         use std::str::FromStr;
@@ -373,10 +379,10 @@ impl AbsDiffEqParser {
         // Use the casting strategy
         let (base_type, own_field, other_field, epsilon, max_relative) = match cast_strategy {
             Some(TypeCast::CastField) => (
-                quote::quote!(#epsilon_type),
-                quote::quote!(&(self.#field_name as #epsilon_type)),
-                quote::quote!(&(other.#field_name as #epsilon_type)),
                 quote::quote!(#epsilon),
+                quote::quote!(#parent_type),
+                quote::quote!(&(self.#field_name as #parent_type)),
+                quote::quote!(&(other.#field_name as #parent_type)),
                 quote::quote!(#max_relative),
             ),
             Some(TypeCast::CastValue) => (
@@ -387,7 +393,7 @@ impl AbsDiffEqParser {
                 quote::quote!(#max_relative as #field_type),
             ),
             None => (
-                quote::quote!(#epsilon_type),
+                quote::quote!(#parent_type),
                 quote::quote!(&self.#field_name),
                 quote::quote!(&other.#field_name),
                 quote::quote!(#epsilon),
