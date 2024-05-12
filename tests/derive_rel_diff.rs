@@ -84,3 +84,13 @@ fn derive_rel_diff_eq_cast_value() {
     };
     approx::assert_relative_ne!(ms1, ms2, max_relative = f32::MIN as f64 / 2.0);
 }
+
+#[test]
+fn derive_rel_diff_eq_tuple_struct() {
+    #[derive(RelativeEq, PartialEq, Debug)]
+    struct Position(f32, f32);
+    let p1 = Position(34.58, 906.1);
+    let p2 = Position(34.57, 906.2);
+    approx::assert_relative_ne!(p1, p2, max_relative = f32::MIN);
+    approx::assert_relative_eq!(p1, p2, max_relative = 0.01);
+}

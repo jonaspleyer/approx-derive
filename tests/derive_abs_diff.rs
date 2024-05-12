@@ -103,3 +103,13 @@ fn derive_abs_diff_eq_skip() {
     approx::assert_abs_diff_ne!(my_struct_1, my_struct_2);
     approx::assert_abs_diff_eq!(my_struct_1, my_struct_2, epsilon = 1.2);
 }
+
+#[test]
+fn derive_abs_diff_eq_tuple_struct() {
+    #[derive(AbsDiffEq, PartialEq, Debug)]
+    struct Position(f32, f32);
+    let p1 = Position(1.0, 0.2);
+    let p2 = Position(0.0, 0.0);
+    approx::assert_abs_diff_ne!(p1, p2);
+    approx::assert_abs_diff_eq!(p1, p2, epsilon = 1.0);
+}
