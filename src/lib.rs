@@ -394,21 +394,21 @@ impl AbsDiffEqParser {
                 quote::quote!(&(self.#field_name as #parent_type)),
                 quote::quote!(&(other.#field_name as #parent_type)),
                 quote::quote!(#epsilon.clone()),
-                quote::quote!(#max_relative),
+                quote::quote!(#max_relative.clone()),
             ),
             Some(TypeCast::CastValue) => (
                 quote::quote!(#field_type),
                 quote::quote!(&self.#field_name),
                 quote::quote!(&other.#field_name),
                 quote::quote!(#epsilon.clone() as #field_type),
-                quote::quote!(#max_relative as #field_type),
+                quote::quote!(#max_relative.clone() as #field_type),
             ),
             None => (
                 quote::quote!(#parent_type),
                 quote::quote!(&self.#field_name),
                 quote::quote!(&other.#field_name),
                 quote::quote!(#epsilon.clone()),
-                quote::quote!(#max_relative),
+                quote::quote!(#max_relative.clone()),
             ),
         };
 
@@ -481,30 +481,40 @@ impl AbsDiffEqParser {
         fields.collect()
     }
 
-    fn implement_derive_abs_diff_eq(&self) -> proc_macro2::TokenStream {
-        let struct_name = &self.item_struct.ident;
-        let (epsilon_type, epsilon_default_value) = self.get_epsilon_type_and_default_value();
-        let fields = self.get_abs_diff_eq_fields();
-        let (impl_generics, ty_generics, where_clause) = self.item_struct.generics.split_for_impl();
-        let where_clause = if self.generics_involved() {
+    fn generate_where_clause(&self, abs_diff_eq: bool) -> proc_macro2::TokenStream {
+        let (epsilon_type, _) = self.get_epsilon_type_and_default_value();
+        let (_, _, where_clause) = self.item_struct.generics.split_for_impl();
+        let trait_bound = match abs_diff_eq {
+            true => quote::quote!(approx::AbsDiffEq),
+            false => quote::quote!(approx::RelativeEq),
+        };
+        if self.generics_involved() {
             let parent = self.get_epsilon_parent_type();
             match where_clause {
                 Some(clause) => quote::quote!(
                     #clause
-                        #parent: approx::AbsDiffEq,
+                        #parent: #trait_bound,
                         #parent: PartialEq,
                         #epsilon_type: Clone,
                 ),
                 None => quote::quote!(
                 where
-                    #parent: approx::AbsDiffEq,
+                    #parent: #trait_bound,
                     #parent: PartialEq,
                     #epsilon_type: Clone,
                 ),
             }
         } else {
             quote::quote!(#where_clause)
-        };
+        }
+    }
+
+    fn implement_derive_abs_diff_eq(&self) -> proc_macro2::TokenStream {
+        let struct_name = &self.item_struct.ident;
+        let (epsilon_type, epsilon_default_value) = self.get_epsilon_type_and_default_value();
+        let fields = self.get_abs_diff_eq_fields();
+        let (impl_generics, ty_generics, _) = self.item_struct.generics.split_for_impl();
+        let where_clause = self.generate_where_clause(true);
 
         quote::quote!(
             const _ : () = {
@@ -531,7 +541,8 @@ impl AbsDiffEqParser {
         let struct_name = &self.item_struct.ident;
         let max_relative_default_value = self.get_max_relative_default_value();
         let fields = self.get_rel_eq_fields();
-        let (impl_generics, ty_generics, where_clause) = self.item_struct.generics.split_for_impl();
+        let (impl_generics, ty_generics, _) = self.item_struct.generics.split_for_impl();
+        let where_clause = self.generate_where_clause(false);
 
         quote::quote!(
             const _ : () = {
