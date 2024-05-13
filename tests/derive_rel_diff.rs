@@ -94,3 +94,16 @@ fn derive_rel_diff_eq_tuple_struct() {
     approx::assert_relative_ne!(p1, p2, max_relative = f32::MIN);
     approx::assert_relative_eq!(p1, p2, max_relative = 0.01);
 }
+
+#[test]
+fn derive_rel_diff_eq_generics() {
+    #[derive(RelativeEq, PartialEq, Debug)]
+    struct GenericPosition<F> {
+        x: F,
+        y: F,
+    }
+    let p1 = GenericPosition { x: 34.58, y: 906.1 };
+    let p2 = GenericPosition { x: 34.57, y: 906.2 };
+    approx::assert_relative_ne!(p1, p2, max_relative = f64::MIN);
+    approx::assert_relative_eq!(p1, p2, max_relative = 0.01);
+}
