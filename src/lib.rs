@@ -31,13 +31,23 @@
 //! {
 //!     #[automatically_derived] impl approx :: AbsDiffEq for Position
 //!     {
-//!         type Epsilon = f64; fn default_epsilon() -> Self :: Epsilon
-//!         { f64 :: EPSILON } fn
-//!         abs_diff_eq(& self, other : & Self, epsilon : Self :: Epsilon) -> bool
-//!         {
-//!             < f64 as approx :: AbsDiffEq > ::
-//!             abs_diff_eq(& self.x, & other.x, epsilon) && < f64 as approx ::
-//!             AbsDiffEq > :: abs_diff_eq(& self.y, & other.y, epsilon) && true
+//!         type Epsilon = <f64 as approx::AbsDiffEq>::Epsilon;
+//!
+//!         fn default_epsilon() -> Self :: Epsilon {
+//!             <f64 as approx::AbsDiffEq>::default_epsilon()
+//!         }
+//!
+//!         fn abs_diff_eq(&self, other: &Self, epsilon: Self::Epsilon) -> bool {
+//!             <f64 as approx::AbsDiffEq>::abs_diff_eq(
+//!                 &self.x,
+//!                 & other.x,
+//!                 epsilon.clone()
+//!             ) &&
+//!             <f64 as approx::AbsDiffEq>::abs_diff_eq(
+//!                 &self.y,
+//!                 &other.y,
+//!                 epsilon.clone()
+//!             ) && true
 //!         }
 //!     }
 //! };
