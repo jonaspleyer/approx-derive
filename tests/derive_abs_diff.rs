@@ -2,6 +2,7 @@ use approx_derive::*;
 
 #[test]
 fn derive_abs_diff_eq() {
+    /// Struct definition
     #[derive(AbsDiffEq, PartialEq, Debug)]
     struct MyStruct {
         value: f64,
@@ -35,6 +36,7 @@ fn derive_abs_diff_eq_cast_field() {
 
 #[test]
 fn derive_abs_diff_eq_cast_field_2() {
+    /// Struct definition
     #[derive(AbsDiffEq, PartialEq, Debug)]
     #[approx(epsilon_type = f32)]
     struct MyStructCast2 {

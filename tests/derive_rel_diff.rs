@@ -2,6 +2,7 @@ use approx_derive::*;
 
 #[test]
 fn derive_rel_diff_eq() {
+    /// Struct definition
     #[derive(RelativeEq, PartialEq, Debug)]
     struct MyStruct {
         value: f64,
