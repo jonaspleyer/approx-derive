@@ -150,20 +150,20 @@ impl StructArgs {
         let mut default_epsilon_value = None;
         let mut default_max_relative_value = None;
         for attribute in attributes.iter() {
-            let arg: StructArgGeneric = attribute.parse_args()?;
-            match arg {
-                StructArgGeneric::Value(StructValueArg::None) => (),
-                StructArgGeneric::KeyValue(StructKeyValueArg::EpsilonType(epsilon_ty)) => {
+            match attribute.parse_args() {
+                Ok(StructArgGeneric::Value(StructValueArg::None)) => (),
+                Ok(StructArgGeneric::KeyValue(StructKeyValueArg::EpsilonType(epsilon_ty))) => {
                     epsilon_type = Some(epsilon_ty)
                 }
-                StructArgGeneric::KeyValue(StructKeyValueArg::DefaultEpsilon(default_eps)) => {
+                Ok(StructArgGeneric::KeyValue(StructKeyValueArg::DefaultEpsilon(default_eps))) => {
                     default_epsilon_value = Some(default_eps)
                 }
-                StructArgGeneric::KeyValue(StructKeyValueArg::DefaultMaxRelative(
+                Ok(StructArgGeneric::KeyValue(StructKeyValueArg::DefaultMaxRelative(
                     default_max_rel,
-                )) => {
+                ))) => {
                     default_max_relative_value = Some(default_max_rel);
                 }
+                Err(_) => {}
             }
         }
         Ok(Self {
