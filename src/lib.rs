@@ -612,8 +612,11 @@ impl AbsDiffEqParser {
                         Some(quote::quote!(#own_field == #other_field &&))
                     } else if let Some(map) = mapping {
                         Some(quote::quote!(
-                            (if let ((Some(a), Some(b))) = (#own_field, #other_field) {
-                                a.relative_eq(b, #epsilon)
+                            (if let ((Some(a), Some(b))) = (
+                                (#map)(#own_field),
+                                (#map)(#other_field)
+                            ) {
+                                approx::RelativeEq::relative_eq(&a, &b, #epsilon, #max_relative)
                             } else {
                                 false
                             }) &&
