@@ -8,6 +8,10 @@
 //! The macros infer the `EPSILON` type of the [AbsDiffEq] trait by looking
 //! at the type of the first struct field or any type specified by the user.
 //!
+//! This table lists all attributes which can be used to customize the derived traits.
+//! They are ordered in descending priority, meaning setting the `#[approx(equal)]` will overwrite
+//! any specifications made in the `#[approx(map = ...)]` attribute.
+//!
 //! | Field Attribute | Functionality |
 //! |:--- | --- |
 //! | [`#[approx(skip)]`](#skipping-fields) | Skips the field entirely |
