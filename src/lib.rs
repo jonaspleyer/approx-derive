@@ -88,6 +88,36 @@
 //! approx::assert_abs_diff_eq!(player1, player2, epsilon = 0.5);
 //! ```
 //!
+//! ## Testing for [Equality](core::cmp::Eq)
+//!
+//! When identical equality is desired, we can specify this with the `#[approx(equal)]` attribute.
+//!
+//! ```
+//! # use approx_derive::*;
+//! #[derive(AbsDiffEq, PartialEq, Debug)]
+//! struct Prediction {
+//!     confidence: f64,
+//!     #[approx(equal)]
+//!     category: String,
+//! }
+//! ```
+//!
+//! Note that in this case, the type of the epsilon value for the implementation of
+//! [AbsDiffEq](https://docs.rs/approx/latest/approx/trait.AbsDiffEq.html) is inferred from the
+//! first field of the `Prediction` struct.
+//! This means if we reorder the arguments of the struct, we need to manually set the epsilon type.
+//!
+//! ```
+//! # use approx_derive::*;
+//! #[derive(AbsDiffEq, PartialEq, Debug)]
+//! #[approx(epsilon_type = f64)]
+//! struct Prediction {
+//!     #[approx(equal)]
+//!     category: String,
+//!     confidence: f64,
+//! }
+//! ```
+//!
 //! ## Casting Fields
 //!
 //! Structs which consist of multiple fields with different
