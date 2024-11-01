@@ -139,3 +139,42 @@ fn derive_abs_diff_eq_generics_tuple() {
     let p2 = GenericPos(1_f32, 32_f32);
     approx::assert_abs_diff_ne!(p1, p2);
 }
+
+#[test]
+fn derive_abs_diff_eq_equal_1() {
+    #[derive(AbsDiffEq, PartialEq, Debug)]
+    struct Prediction {
+        confidence: f64,
+        #[approx(equal)]
+        category: String,
+    }
+    let p1 = Prediction {
+        confidence: -1.0,
+        category: "horses".into(),
+    };
+    let p2 = Prediction {
+        confidence: -1.2,
+        category: "horses".into(),
+    };
+    approx::assert_abs_diff_eq!(p1, p2, epsilon = 0.3);
+}
+
+#[test]
+fn derive_abs_diff_eq_equal_2() {
+    #[derive(AbsDiffEq, PartialEq, Debug)]
+    #[approx(epsilon_type = f64)]
+    struct Prediction {
+        #[approx(equal)]
+        category: String,
+        confidence: f64,
+    }
+    let p1 = Prediction {
+        confidence: -1.0,
+        category: "horses".into(),
+    };
+    let p2 = Prediction {
+        confidence: -1.2,
+        category: "horses".into(),
+    };
+    approx::assert_abs_diff_eq!(p1, p2, epsilon = 0.3);
+}
