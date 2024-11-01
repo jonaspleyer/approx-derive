@@ -22,6 +22,7 @@ impl FieldWithArgs {
 /// All arguments that can be specified and parsed in a field
 pub struct FieldArgs {
     pub skip: bool,
+    pub set_equal: bool,
     pub cast_strategy: Option<TypeCast>,
     pub epsilon_static_value: Option<syn::Expr>,
     pub max_relative_static_value: Option<syn::Expr>,
@@ -31,6 +32,7 @@ pub struct FieldArgs {
 pub enum FieldValueArg {
     Skip,
     CastStrategy(TypeCast),
+    Equal,
 }
 
 impl FieldValueArg {
@@ -39,6 +41,7 @@ impl FieldValueArg {
             "skip" => Ok(FieldValueArg::Skip),
             "cast_field" => Ok(FieldValueArg::CastStrategy(TypeCast::CastField)),
             "cast_value" => Ok(FieldValueArg::CastStrategy(TypeCast::CastValue)),
+            "equal" => Ok(FieldValueArg::Equal),
             _ => Err(syn::Error::new(ident.span(), "Not a valid value.")),
         }
     }
@@ -177,6 +180,7 @@ impl StructArgs {
 impl FieldArgs {
     fn from_attrs(attributes: &Vec<syn::Attribute>) -> syn::Result<Self> {
         let mut skip = false;
+        let mut set_equal = false;
         let mut cast_strategy = None;
         let mut epsilon_static_value = None;
         let mut max_relative_static_value = None;
@@ -189,6 +193,7 @@ impl FieldArgs {
                     FieldArgGeneric::Value(FieldValueArg::CastStrategy(strategy)) => {
                         cast_strategy = Some(strategy)
                     }
+                    FieldArgGeneric::Value(FieldValueArg::Equal) => set_equal = true,
                     FieldArgGeneric::KeyValue(FieldKeyValueArg::EpsilonStatic(epsilon_static)) => {
                         epsilon_static_value = epsilon_static;
                     }
@@ -205,6 +210,7 @@ impl FieldArgs {
             cast_strategy: cast_strategy,
             epsilon_static_value,
             max_relative_static_value,
+            set_equal,
         })
     }
 }

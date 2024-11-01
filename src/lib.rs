@@ -294,6 +294,7 @@ struct FieldFormatted {
     other_field: proc_macro2::TokenStream,
     epsilon: proc_macro2::TokenStream,
     max_relative: proc_macro2::TokenStream,
+    set_equal: bool,
 }
 
 impl AbsDiffEqParser {
@@ -429,6 +430,7 @@ impl AbsDiffEqParser {
             other_field,
             epsilon,
             max_relative,
+            set_equal: field_with_args.args.set_equal,
         })
     }
 
@@ -446,15 +448,20 @@ impl AbsDiffEqParser {
                     epsilon,
                     #[allow(unused)]
                     max_relative,
+                    set_equal,
                 }) = self.format_nth_field(n, field_with_args)
                 {
-                    Some(quote::quote!(
-                        <#base_type as approx::AbsDiffEq>::abs_diff_eq(
-                            #own_field,
-                            #other_field,
-                            #epsilon
-                        ) &&
-                    ))
+                    if set_equal {
+                        Some(quote::quote!(#own_field == #other_field &&))
+                    } else {
+                        Some(quote::quote!(
+                            <#base_type as approx::AbsDiffEq>::abs_diff_eq(
+                                #own_field,
+                                #other_field,
+                                #epsilon
+                            ) &&
+                        ))
+                    }
                 } else {
                     None
                 }
@@ -474,16 +481,21 @@ impl AbsDiffEqParser {
                     other_field,
                     epsilon,
                     max_relative,
+                    set_equal,
                 }) = self.format_nth_field(n, field_with_args)
                 {
-                    Some(quote::quote!(
-                        <#base_type as approx::RelativeEq>::relative_eq(
-                            #own_field,
-                            #other_field,
-                            #epsilon,
-                            #max_relative
-                        ) &&
-                    ))
+                    if set_equal {
+                        Some(quote::quote!(#own_field == #other_field &&))
+                    } else {
+                        Some(quote::quote!(
+                            <#base_type as approx::RelativeEq>::relative_eq(
+                                #own_field,
+                                #other_field,
+                                #epsilon,
+                                #max_relative
+                            ) &&
+                        ))
+                    }
                 } else {
                     None
                 }
