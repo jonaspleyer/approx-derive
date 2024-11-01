@@ -237,3 +237,68 @@ fn derive_abs_diff_option_2() {
     approx::assert_abs_diff_eq!(c4, c5, epsilon = 6.0);
 }
 
+#[test]
+fn derive_abs_diff_mapping() {
+    #[derive(AbsDiffEq, PartialEq, Debug)]
+    struct Cat {
+        weight: f32,
+        #[approx(map = |x| {Some(&0f32)})]
+        birthday: String,
+    }
+    let c1 = Cat {
+        weight: 5.3,
+        birthday: "19th of April 2022".into(),
+    };
+    let c2 = Cat {
+        weight: 5.3,
+        birthday: "19/04/2022".into(),
+    };
+    approx::assert_abs_diff_eq!(c1, c2);
+}
+
+#[test]
+fn derive_abs_diff_mapping_function() {
+    #[derive(PartialEq, Debug)]
+    enum Time {
+        Days(u16),
+        Weeks(u16),
+    }
+    fn time_to_days(t: &Time) -> Option<u16> {
+        match t {
+            Time::Days(d) => Some(*d),
+            Time::Weeks(w) => Some(7*w)
+        }
+    }
+    #[derive(AbsDiffEq, PartialEq, Debug)]
+    struct Dogo {
+        age_in_weeks: u16,
+        #[approx(map = time_to_days)]
+        next_doctors_appointment: Time,
+    }
+    let d1 = Dogo {
+        age_in_weeks: 52,
+        next_doctors_appointment: Time::Days(35),
+    };
+    let d2 = Dogo {
+        age_in_weeks: 52,
+        next_doctors_appointment: Time::Weeks(5),
+    };
+    approx::assert_abs_diff_eq!(d1, d2, epsilon=0);
+}
+
+#[test]
+fn derive_abs_diff_equal_higher_priority_than_mapping() {
+    #[derive(AbsDiffEq, PartialEq, Debug)]
+    struct Length {
+        #[approx(equal)]
+        #[approx(map = |x: &f32| Some(2.0*x))]
+        meters: f32,
+    }
+    let l1 = Length {
+        meters: 3.0,
+    };
+    let l2 = Length {
+        meters: 3.0001,
+    };
+    approx::assert_abs_diff_ne!(l1, l2, epsilon = 0.001);
+}
