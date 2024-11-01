@@ -8,6 +8,18 @@
 //! The macros infer the `EPSILON` type of the [AbsDiffEq] trait by looking
 //! at the type of the first struct field or any type specified by the user.
 //!
+//! | Field Attribute | Functionality |
+//! |:--- | --- |
+//! | [`#[approx(skip)]`](#skipping-fields) | Skips the field entirely |
+//! | [`#[approx(equal)]`](#testing-for-equality) | Checks this field with `==` for Equality |
+//! | [`#[approx(cast_field)]`](#casting-fields) | Casts the field with `.. as ..` syntax. |
+//! | [`#[approx(static_epsilon = ..)]`](#static-values) | Defines a static epsilon value for this particular field. |
+//! | | |
+//! | **Struct Attribute** | |
+//! | [`#[approx(default_epsilon = ...)]`](#default-epsilon) | Sets the default epsilon value |
+//! | [`#[approx(default_max_relative = ...)]`](#default-max-relative) | Sets the default `max_relative` value. |
+//! | [`#[approx(epsilon_type = ...)]`](#epsilon-type) | Sets the type of the epsilon value |
+//!
 //! The following example explains a possible use-case.
 //!
 //! ```
