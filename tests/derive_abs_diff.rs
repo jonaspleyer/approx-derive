@@ -202,3 +202,38 @@ fn derive_abs_diff_eq_equal_2() {
     };
     approx::assert_abs_diff_ne!(p1, p2, epsilon = 0.3);
 }
+
+#[test]
+fn derive_abs_diff_option_2() {
+    #[derive(AbsDiffEq, PartialEq, Debug)]
+    struct Car {
+        max_speed: f32,
+        #[approx(map = |x| x)]
+        battery: Option<f32>,
+    }
+    let c1 = Car {
+        max_speed: 180.0,
+        battery: Some(1.0),
+    };
+    let c2 = Car {
+        max_speed: 180.1,
+        battery: Some(0.99),
+    };
+    let c3 = Car {
+        max_speed: 180.0,
+        battery: None,
+    };
+    let c4 = Car {
+        max_speed: 182.0,
+        battery: Some(1.1),
+    };
+    let c5 = Car {
+        max_speed: 177.0,
+        battery: Some(0.9),
+    };
+    approx::assert_abs_diff_eq!(c1, c2, epsilon = 0.15);
+    approx::assert_abs_diff_ne!(c1, c3, epsilon = 0.15);
+    approx::assert_abs_diff_ne!(c4, c3, epsilon = 10.0);
+    approx::assert_abs_diff_eq!(c4, c5, epsilon = 6.0);
+}
+
