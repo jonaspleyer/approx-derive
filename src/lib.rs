@@ -1,3 +1,4 @@
+#![deny(missing_docs)]
 //! This crate provides derive macros for the
 //! [AbsDiffEq](https://docs.rs/approx/latest/approx/trait.AbsDiffEq.html) and
 //! [RelativeEq](https://docs.rs/approx/latest/approx/trait.RelativeEq.html) traits of the
