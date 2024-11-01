@@ -108,3 +108,42 @@ fn derive_rel_diff_eq_generics() {
     approx::assert_relative_ne!(p1, p2, max_relative = f64::MIN);
     approx::assert_relative_eq!(p1, p2, max_relative = 0.01);
 }
+
+#[test]
+fn derive_rel_diff_eq_equal_1() {
+    #[derive(RelativeEq, PartialEq, Debug)]
+    struct Prediction {
+        confidence: f64,
+        #[approx(equal)]
+        category: String,
+    }
+    let p1 = Prediction {
+        confidence: -10.0,
+        category: "horses".into(),
+    };
+    let p2 = Prediction {
+        confidence: -10.2,
+        category: "horses".into(),
+    };
+    approx::assert_relative_eq!(p1, p2, max_relative = 0.021);
+}
+
+#[test]
+fn derive_rel_diff_eq_equal_2() {
+    #[derive(RelativeEq, PartialEq, Debug)]
+    #[approx(epsilon_type = f64)]
+    struct Prediction {
+        #[approx(equal)]
+        category: String,
+        confidence: f64,
+    }
+    let p1 = Prediction {
+        confidence: 0.00002,
+        category: "my_horses".into(),
+    };
+    let p2 = Prediction {
+        confidence: -0.0001,
+        category: "horses".into(),
+    };
+    approx::assert_relative_ne!(p1, p2, max_relative = 0.1);
+}
