@@ -170,11 +170,11 @@ fn derive_abs_diff_eq_equal_2() {
     }
     let p1 = Prediction {
         confidence: -1.0,
-        category: "horses".into(),
+        category: "my_horses".into(),
     };
     let p2 = Prediction {
         confidence: -1.2,
         category: "horses".into(),
     };
-    approx::assert_abs_diff_eq!(p1, p2, epsilon = 0.3);
+    approx::assert_abs_diff_ne!(p1, p2, epsilon = 0.3);
 }
