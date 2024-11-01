@@ -266,7 +266,7 @@ fn derive_abs_diff_mapping_function() {
     fn time_to_days(t: &Time) -> Option<u16> {
         match t {
             Time::Days(d) => Some(*d),
-            Time::Weeks(w) => Some(7*w)
+            Time::Weeks(w) => Some(7 * w),
         }
     }
     #[derive(AbsDiffEq, PartialEq, Debug)]
@@ -283,7 +283,7 @@ fn derive_abs_diff_mapping_function() {
         age_in_weeks: 52,
         next_doctors_appointment: Time::Weeks(5),
     };
-    approx::assert_abs_diff_eq!(d1, d2, epsilon=0);
+    approx::assert_abs_diff_eq!(d1, d2, epsilon = 0);
 }
 
 #[test]
@@ -294,11 +294,7 @@ fn derive_abs_diff_equal_higher_priority_than_mapping() {
         #[approx(map = |x: &f32| Some(2.0*x))]
         meters: f32,
     }
-    let l1 = Length {
-        meters: 3.0,
-    };
-    let l2 = Length {
-        meters: 3.0001,
-    };
+    let l1 = Length { meters: 3.0 };
+    let l2 = Length { meters: 3.0001 };
     approx::assert_abs_diff_ne!(l1, l2, epsilon = 0.001);
 }
