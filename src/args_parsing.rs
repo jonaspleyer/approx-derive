@@ -207,7 +207,7 @@ impl FieldArgs {
         }
         Ok(Self {
             skip,
-            cast_strategy: cast_strategy,
+            cast_strategy,
             epsilon_static_value,
             max_relative_static_value,
             set_equal,
