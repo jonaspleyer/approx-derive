@@ -1,6 +1,6 @@
 [package]
 name = "approx-derive"
-version = "0.1.4"
+version = "0.1.5"
 edition = "2021"
 description = "Extends the approx crate by derive macros."
 license = "Apache-2.0"
