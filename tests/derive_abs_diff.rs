@@ -141,6 +141,21 @@ fn derive_abs_diff_eq_generics_tuple() {
 }
 
 #[test]
+fn derive_abs_diff_option() {
+    #[derive(AbsDiffEq, PartialEq, Debug)]
+    struct ContainsOptional {
+        value: f64,
+        #[approx(equal)]
+        opt: Option<i32>,
+    }
+    let c1 = ContainsOptional { value: 1.1, opt: Some(1) };
+    let c2 = ContainsOptional { value: 1.0, opt: Some(1) };
+    let c3 = ContainsOptional { value: 1.0, opt: Some(2) };
+    approx::assert_abs_diff_eq!(c1, c2, epsilon = 0.2);
+    approx::assert_abs_diff_ne!(c2, c3);
+}
+
+#[test]
 fn derive_abs_diff_eq_equal_1() {
     #[derive(AbsDiffEq, PartialEq, Debug)]
     struct Prediction {
