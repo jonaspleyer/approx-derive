@@ -570,7 +570,10 @@ impl AbsDiffEqParser {
                         Some(quote::quote!(#own_field == #other_field &&))
                     } else if let Some(map) = mapping {
                         Some(quote::quote!(
-                            (if let ((Some(a), Some(b))) = ((#map)(#own_field), (#map)(#other_field)) {
+                            (if let ((Some(a), Some(b))) = (
+                                (#map)(#own_field),
+                                (#map)(#other_field)
+                            ) {
                                 (&a).abs_diff_eq(&b, #epsilon)
                             } else {
                                 false
