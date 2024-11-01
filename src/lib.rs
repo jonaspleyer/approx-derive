@@ -179,6 +179,64 @@
 //! approx::assert_relative_eq!(ms1, ms2);
 //! ```
 //!
+//! ## Mapping Values
+//!
+//! We can map values before comparing them.
+//! By default, we need to return an option of the value in question.
+//! This allows to do computations where error can occur.
+//! Although this error is not caught, the comparison will fail if any of the two compared objects
+//! return a `None` value.
+//! ```
+//! # use approx_derive::*;
+//! # use approx::*;
+//! #[derive(AbsDiffEq, PartialEq, Debug)]
+//! struct Tower {
+//!     height_in_meters: f32,
+//!     #[approx(map = |x: &f32| Some(x.sqrt()))]
+//!     area_in_meters_squared: f32,
+//! }
+//! # let t1 = Tower {
+//! #   height_in_meters: 100.0,
+//! #   area_in_meters_squared: 30.1,
+//! # };
+//! # let t2 = Tower {
+//! #   height_in_meters: 100.0,
+//! #   area_in_meters_squared: 30.5,
+//! # };
+//! # approx::assert_abs_diff_ne!(t1, t2, epsilon = 0.03);
+//! ```
+//!
+//! This functionality can also be useful when having more complex datatypes.
+//! ```
+//! # use approx_derive::*;
+//! # use approx::*;
+//! #[derive(PartialEq, Debug)]
+//! enum Time {
+//!     Years(u16),
+//!     Months(u16),
+//!     Weeks(u16),
+//!     Days(u16),
+//! }
+//!
+//! fn time_to_days(time: &Time) -> Option<u16> {
+//!     match time {
+//!         Time::Years(y) => Some(365 * y),
+//!         Time::Months(m) => Some(30 * m),
+//!         Time::Weeks(w) => Some(7 * w),
+//!         Time::Days(d) => Some(*d),
+//!     }
+//! }
+//!
+//! #[derive(AbsDiffEq, PartialEq, Debug)]
+//! #[approx(epsilon_type = u16)]
+//! struct Dog {
+//!     #[approx(map = time_to_days)]
+//!     age: Time,
+//!     #[approx(map = time_to_days)]
+//!     next_doctors_appointment: Time,
+//! }
+//! ```
+//!
 //! ## Static Values
 //! We can force a static `EPSILON` or `max_relative` value for individual fields.
 //! ```
