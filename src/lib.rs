@@ -13,6 +13,7 @@
 //! | [`#[approx(skip)]`](#skipping-fields) | Skips the field entirely |
 //! | [`#[approx(equal)]`](#testing-for-equality) | Checks this field with `==` for Equality |
 //! | [`#[approx(cast_field)]`](#casting-fields) | Casts the field with `.. as ..` syntax. |
+//! | [`#[approx(map = ..)]`](#mapping-values) | Maps values before comparing them. |
 //! | [`#[approx(static_epsilon = ..)]`](#static-values) | Defines a static epsilon value for this particular field. |
 //! | | |
 //! | **Struct Attribute** | |
@@ -337,6 +338,7 @@ struct FieldFormatted {
     other_field: proc_macro2::TokenStream,
     epsilon: proc_macro2::TokenStream,
     max_relative: proc_macro2::TokenStream,
+    mapping: Option<proc_macro2::TokenStream>,
     set_equal: bool,
 }
 
@@ -466,6 +468,12 @@ impl AbsDiffEqParser {
             ),
         };
 
+        let mapping = field_with_args
+            .args
+            .mapping
+            .clone()
+            .map(|expr| quote::quote!(#expr));
+
         // Return the fully formatted field
         Some(FieldFormatted {
             base_type,
@@ -474,6 +482,7 @@ impl AbsDiffEqParser {
             epsilon,
             max_relative,
             set_equal: field_with_args.args.set_equal,
+            mapping,
         })
     }
 
@@ -492,10 +501,19 @@ impl AbsDiffEqParser {
                     #[allow(unused)]
                     max_relative,
                     set_equal,
+                    mapping,
                 }) = self.format_nth_field(n, field_with_args)
                 {
                     if set_equal {
                         Some(quote::quote!(#own_field == #other_field &&))
+                    } else if let Some(map) = mapping {
+                        Some(quote::quote!(
+                            (if let ((Some(a), Some(b))) = ((#map)(#own_field), (#map)(#other_field)) {
+                                (&a).abs_diff_eq(&b, #epsilon)
+                            } else {
+                                false
+                            }) &&
+                        ))
                     } else {
                         Some(quote::quote!(
                             <#base_type as approx::AbsDiffEq>::abs_diff_eq(
@@ -525,10 +543,19 @@ impl AbsDiffEqParser {
                     epsilon,
                     max_relative,
                     set_equal,
+                    mapping,
                 }) = self.format_nth_field(n, field_with_args)
                 {
                     if set_equal {
                         Some(quote::quote!(#own_field == #other_field &&))
+                    } else if let Some(map) = mapping {
+                        Some(quote::quote!(
+                            (if let ((Some(a), Some(b))) = (#own_field, #other_field) {
+                                a.relative_eq(b, #epsilon)
+                            } else {
+                                false
+                            }) &&
+                        ))
                     } else {
                         Some(quote::quote!(
                             <#base_type as approx::RelativeEq>::relative_eq(

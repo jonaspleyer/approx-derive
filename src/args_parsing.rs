@@ -26,6 +26,7 @@ pub struct FieldArgs {
     pub cast_strategy: Option<TypeCast>,
     pub epsilon_static_value: Option<syn::Expr>,
     pub max_relative_static_value: Option<syn::Expr>,
+    pub mapping: Option<syn::Expr>,
 }
 
 /// Every value argument specified by `#[approx(value)]`
@@ -51,6 +52,7 @@ impl FieldValueArg {
 pub enum FieldKeyValueArg {
     EpsilonStatic(Option<syn::Expr>),
     MaxRelativeStatic(Option<syn::Expr>),
+    Mapping(Option<syn::Expr>),
 }
 
 impl FieldKeyValueArg {
@@ -58,6 +60,7 @@ impl FieldKeyValueArg {
         match keyword.to_string().as_str() {
             "static_epsilon" => Ok(Self::EpsilonStatic(Some(input.parse()?))),
             "static_max_relative" => Ok(Self::MaxRelativeStatic(Some(input.parse()?))),
+            "map" => Ok(Self::Mapping(Some(input.parse()?))),
             _ => Err(syn::Error::new(keyword.span(), "Not a valid keyword")),
         }
     }
@@ -181,6 +184,7 @@ impl FieldArgs {
     fn from_attrs(attributes: &Vec<syn::Attribute>) -> syn::Result<Self> {
         let mut skip = false;
         let mut set_equal = false;
+        let mut mapping = None;
         let mut cast_strategy = None;
         let mut epsilon_static_value = None;
         let mut max_relative_static_value = None;
@@ -202,15 +206,17 @@ impl FieldArgs {
                     )) => {
                         max_relative_static_value = max_rel_static;
                     }
+                    FieldArgGeneric::KeyValue(FieldKeyValueArg::Mapping(expr)) => mapping = expr,
                 }
             }
         }
         Ok(Self {
             skip,
+            set_equal,
             cast_strategy,
             epsilon_static_value,
             max_relative_static_value,
-            set_equal,
+            mapping,
         })
     }
 }
