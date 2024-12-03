@@ -374,12 +374,12 @@ impl syn::parse::Parse for AbsDiffEqParser {
             syn::Fields::Named(named_fields) => named_fields
                 .named
                 .iter()
-                .map(|field| FieldWithArgs::from_field(field))
+                .map(FieldWithArgs::from_field)
                 .collect::<syn::Result<Vec<_>>>(),
             syn::Fields::Unnamed(unnamed_fields) => unnamed_fields
                 .unnamed
                 .iter()
-                .map(|field| FieldWithArgs::from_field(field))
+                .map(FieldWithArgs::from_field)
                 .collect::<syn::Result<Vec<_>>>(),
             syn::Fields::Unit => Err(syn::Error::new(
                 item_struct.span(),
@@ -409,15 +409,14 @@ impl AbsDiffEqParser {
         self.struct_args
             .epsilon_type
             .clone()
-            .and_then(|x| Some(quote::quote!(#x)))
+            .map(|x| quote::quote!(#x))
             .or_else(|| {
                 self.fields_with_args
                     .iter()
-                    .filter(|field| field.args.skip == false)
-                    .next()
-                    .and_then(|field| {
+                    .find(|field| !field.args.skip)
+                    .map(|field| {
                         let field_type = &field.ty;
-                        Some(quote::quote!(#field_type))
+                        quote::quote!(#field_type)
                     })
             })
             .or_else(|| Some(quote::quote!(f64)))
@@ -438,7 +437,7 @@ impl AbsDiffEqParser {
             .struct_args
             .default_epsilon_value
             .clone()
-            .and_then(|x| Some(quote::quote!(#x)))
+            .map(|x| quote::quote!(#x))
             .or_else(|| Some(quote::quote!(<#parent as approx::AbsDiffEq>::default_epsilon())))
             .unwrap();
         (epsilon_type, epsilon_default_value)
@@ -458,7 +457,7 @@ impl AbsDiffEqParser {
         self.struct_args
             .default_max_relative_value
             .clone()
-            .and_then(|x| Some(quote::quote!(#x)))
+            .map(|x| quote::quote!(#x))
             .or_else(|| {
                 Some(quote::quote!(<#epsilon_type as approx::RelativeEq>::default_max_relative()))
             })
@@ -494,14 +493,14 @@ impl AbsDiffEqParser {
             .args
             .epsilon_static_value
             .clone()
-            .and_then(|x| Some(quote::quote!(#x)))
+            .map(|x| quote::quote!(#x))
             .or_else(|| Some(quote::quote!(epsilon)))
             .unwrap();
         let max_relative = field_with_args
             .args
             .max_relative_static_value
             .clone()
-            .and_then(|x| Some(quote::quote!(#x)))
+            .map(|x| quote::quote!(#x))
             .or_else(|| Some(quote::quote!(max_relative)))
             .unwrap();
 
