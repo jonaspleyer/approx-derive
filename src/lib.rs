@@ -392,7 +392,6 @@
 //! ```
 
 mod args_parsing;
-use std::default;
 
 use args_parsing::*;
 
