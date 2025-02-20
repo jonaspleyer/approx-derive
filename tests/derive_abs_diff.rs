@@ -298,3 +298,83 @@ fn derive_abs_diff_equal_higher_priority_than_mapping() {
     let l2 = Length { meters: 3.0001 };
     approx::assert_abs_diff_ne!(l1, l2, epsilon = 0.001);
 }
+
+#[test]
+fn derive_abs_diff_equal_enum() {
+    #[derive(AbsDiffEq, PartialEq, Debug)]
+    enum Parameter {
+        Fixed(f32),
+        Range(f32, f32),
+    }
+
+    let l1 = Parameter::Fixed(1.0);
+    let l2 = Parameter::Fixed(20.0);
+    approx::assert_abs_diff_ne!(l1, l2);
+    approx::assert_abs_diff_eq!(l1, l2, epsilon = 20.0);
+
+    let l3 = Parameter::Range(1.0, 3.0);
+    let l4 = Parameter::Range(1.0, 3.1);
+    approx::assert_abs_diff_ne!(l2, l3);
+    approx::assert_abs_diff_ne!(l3, l4);
+    approx::assert_abs_diff_eq!(l3, l4, epsilon = 0.11);
+}
+
+#[test]
+fn derive_abs_diff_equal_enum_struct() {
+    #[derive(AbsDiffEq, PartialEq, Debug)]
+    enum Parameter {
+        Fixed { value: f32 },
+        Range { lower: f32, upper: f32 },
+    }
+
+    let l1 = Parameter::Fixed { value: 1.0 };
+    let l2 = Parameter::Fixed { value: 20.0 };
+    approx::assert_abs_diff_ne!(l1, l2);
+    approx::assert_abs_diff_eq!(l1, l2, epsilon = 20.0);
+
+    let l3 = Parameter::Range {
+        lower: 1.0,
+        upper: 3.0,
+    };
+    let l4 = Parameter::Range {
+        lower: 1.0,
+        upper: 3.1,
+    };
+    approx::assert_abs_diff_ne!(l2, l3);
+    approx::assert_abs_diff_ne!(l3, l4);
+    approx::assert_abs_diff_eq!(l3, l4, epsilon = 0.11);
+}
+
+#[test]
+fn derive_abs_diff_equal_enum_cast() {
+    #[derive(AbsDiffEq, PartialEq, Debug)]
+    enum Location {
+        Smooth {
+            x: f32,
+            y: f32,
+        },
+        #[approx(map = |x: &isize| Some(*x as f32 / 10.0))]
+        Lattice {
+            x: isize,
+            #[approx(equal)]
+            y: isize,
+        },
+    }
+
+    let l1 = Location::Smooth { x: 1.0, y: 2.0 };
+    let l2 = Location::Smooth { x: 1.1, y: 1.9 };
+    approx::assert_abs_diff_ne!(l1, l2);
+    approx::assert_abs_diff_eq!(l1, l2, epsilon = 0.11);
+
+    let l3 = Location::Lattice { x: 1, y: 2 };
+    let l4 = Location::Lattice { x: 1, y: 3 };
+    let l5 = Location::Lattice { x: 1, y: 2 };
+    approx::assert_abs_diff_ne!(l2, l3);
+    approx::assert_abs_diff_ne!(l3, l4);
+    approx::assert_abs_diff_eq!(l3, l5);
+
+    let l6 = Location::Lattice { x: 2, y: 2 };
+    let l7 = Location::Lattice { x: 1, y: 2 };
+    approx::assert_abs_diff_eq!(l6, l7, epsilon = 0.2);
+    approx::assert_abs_diff_ne!(l6, l7, epsilon = 0.01);
+}
