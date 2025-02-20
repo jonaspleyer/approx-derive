@@ -264,3 +264,50 @@ fn derive_relative_equal_higher_priority_than_mapping() {
     let l2 = Length { meters: 3.0001 };
     approx::assert_relative_ne!(l1, l2, epsilon = 0.001);
 }
+
+#[test]
+fn derive_rel_diff_enum() {
+    #[derive(RelativeEq, PartialEq, Debug)]
+    enum MyEnum {
+        V1 {
+            x: f32,
+            y: f32,
+        },
+        #[approx(cast_value)]
+        V2(f64),
+    }
+
+    let me1 = MyEnum::V1 {
+        x: 101.001,
+        y: -88.33,
+    };
+    let me2 = MyEnum::V1 {
+        x: 110.001,
+        y: -84.33,
+    };
+    approx::assert_relative_ne!(me1, me2);
+    approx::assert_relative_eq!(me1, me2, max_relative = 0.1);
+
+    let me3 = MyEnum::V2(1.0);
+    let me4 = MyEnum::V2(1.1);
+    approx::assert_relative_ne!(me2, me3);
+    approx::assert_relative_ne!(me3, me4);
+    approx::assert_relative_eq!(me3, me4, max_relative = 0.11);
+}
+
+#[test]
+fn derive_rel_diff_enum_2() {
+    #[derive(RelativeEq, PartialEq, Debug)]
+    enum Permission {
+        Admin,
+        User,
+        Remote,
+    }
+
+    let p1 = Permission::Admin;
+    let p2 = Permission::User;
+    let p3 = Permission::Remote;
+    approx::assert_relative_ne!(p1, p2);
+    approx::assert_relative_ne!(p2, p3);
+    approx::assert_relative_ne!(p3, p1);
+}
