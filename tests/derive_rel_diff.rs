@@ -149,7 +149,7 @@ fn derive_rel_diff_eq_equal_2() {
 }
 
 #[test]
-fn derive_abs_diff_eq_equal_2() {
+fn derive_relative_eq_equal_2() {
     #[derive(RelativeEq, PartialEq, Debug)]
     #[approx(epsilon_type = f64)]
     struct Prediction {
@@ -165,17 +165,18 @@ fn derive_abs_diff_eq_equal_2() {
         confidence: -1.2,
         category: "horses".into(),
     };
-    approx::assert_abs_diff_ne!(p1, p2, epsilon = 0.3);
+    approx::assert_relative_ne!(p1, p2, epsilon = 0.3);
 }
 
 #[test]
-fn derive_abs_diff_option_2() {
+fn derive_relative_option_2() {
     #[derive(RelativeEq, PartialEq, Debug)]
     struct Car {
         max_speed: f32,
         #[approx(map = |x| x)]
         battery: Option<f32>,
     }
+
     let c1 = Car {
         max_speed: 180.0,
         battery: Some(1.0),
@@ -196,14 +197,14 @@ fn derive_abs_diff_option_2() {
         max_speed: 177.0,
         battery: Some(0.9),
     };
-    approx::assert_abs_diff_eq!(c1, c2, epsilon = 0.15);
-    approx::assert_abs_diff_ne!(c1, c3, epsilon = 0.15);
-    approx::assert_abs_diff_ne!(c4, c3, epsilon = 10.0);
-    approx::assert_abs_diff_eq!(c4, c5, epsilon = 6.0);
+    approx::assert_relative_eq!(c1, c2, epsilon = 0.15);
+    approx::assert_relative_ne!(c1, c3, epsilon = 0.15);
+    approx::assert_relative_ne!(c4, c3, epsilon = 10.0);
+    approx::assert_relative_eq!(c4, c5, epsilon = 6.0);
 }
 
 #[test]
-fn derive_abs_diff_mapping() {
+fn derive_relative_mapping() {
     #[derive(RelativeEq, PartialEq, Debug)]
     struct Cat {
         weight: f32,
@@ -218,11 +219,11 @@ fn derive_abs_diff_mapping() {
         weight: 5.3,
         birthday: "19/04/2022".into(),
     };
-    approx::assert_abs_diff_eq!(c1, c2);
+    approx::assert_relative_eq!(c1, c2);
 }
 
 #[test]
-fn derive_abs_diff_mapping_function() {
+fn derive_relative_mapping_function() {
     #[derive(PartialEq, Debug)]
     enum Time {
         Days(f64),
@@ -248,12 +249,12 @@ fn derive_abs_diff_mapping_function() {
         age_in_weeks: 52.0,
         next_doctors_appointment: Time::Weeks(5.0),
     };
-    approx::assert_abs_diff_eq!(d1, d2, epsilon = 0.0);
+    approx::assert_relative_eq!(d1, d2, epsilon = 0.0);
 }
 
 #[test]
-fn derive_abs_diff_equal_higher_priority_than_mapping() {
-    #[derive(AbsDiffEq, PartialEq, Debug)]
+fn derive_relative_equal_higher_priority_than_mapping() {
+    #[derive(RelativeEq, PartialEq, Debug)]
     struct Length {
         #[approx(equal)]
         #[approx(map = |x: &f32| Some(2.0*x))]
@@ -261,5 +262,5 @@ fn derive_abs_diff_equal_higher_priority_than_mapping() {
     }
     let l1 = Length { meters: 3.0 };
     let l2 = Length { meters: 3.0001 };
-    approx::assert_abs_diff_ne!(l1, l2, epsilon = 0.001);
+    approx::assert_relative_ne!(l1, l2, epsilon = 0.001);
 }
