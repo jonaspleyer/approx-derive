@@ -679,7 +679,7 @@ impl AbsDiffEqParser {
                 quote::quote!((#max_relative.clone() as #field_type)),
             ),
             None => (
-                quote::quote!(#parent_type),
+                quote::quote!(#field_type),
                 quote::quote!(&#field_name1),
                 quote::quote!(&#field_name2),
                 quote::quote!(#epsilon.clone()),
