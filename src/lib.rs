@@ -669,10 +669,12 @@ impl AbsDiffEqParser {
         })
     }
 
-    fn get_abs_diff_eq_fields(&self) -> Vec<proc_macro2::TokenStream> {
+    fn get_abs_diff_eq_struct_fields(
+        &self,
+        fields_with_args: &[FieldWithArgs],
+    ) -> Vec<proc_macro2::TokenStream> {
         // We need to extend the where clause for all generics
-        let fields = self
-            .fields_with_args
+        let fields = fields_with_args
             .iter()
             .enumerate()
             .filter_map(|(n, field_with_args)| {
@@ -685,7 +687,7 @@ impl AbsDiffEqParser {
                     max_relative,
                     set_equal,
                     mapping,
-                }) = self.format_nth_field(n, field_with_args)
+                }) = self.format_nth_field(n, field_with_args, None)
                 {
                     if set_equal {
                         Some(quote::quote!(#own_field == #other_field &&))
