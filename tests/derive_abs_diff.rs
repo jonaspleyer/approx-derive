@@ -353,8 +353,8 @@ fn derive_abs_diff_equal_enum_cast() {
             x: f32,
             y: f32,
         },
-        #[approx(map = |x: &isize| Some(*x as f32 / 10.0))]
         Lattice {
+            #[approx(cast_value)]
             x: isize,
             #[approx(equal)]
             y: isize,
@@ -375,6 +375,6 @@ fn derive_abs_diff_equal_enum_cast() {
 
     let l6 = Location::Lattice { x: 2, y: 2 };
     let l7 = Location::Lattice { x: 1, y: 2 };
-    approx::assert_abs_diff_eq!(l6, l7, epsilon = 0.2);
+    approx::assert_abs_diff_eq!(l6, l7, epsilon = 1.0);
     approx::assert_abs_diff_ne!(l6, l7, epsilon = 0.01);
 }
