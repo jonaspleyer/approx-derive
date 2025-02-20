@@ -941,33 +941,49 @@ impl AbsDiffEqParser {
     fn implement_derive_rel_diff_eq(&self) -> proc_macro2::TokenStream {
         let obj_name = &self.base_type.ident();
         let max_relative_default_value = self.get_max_relative_default_value();
-        let fields = self.get_rel_eq_fields();
 
         let (impl_generics, ty_generics, _) = self.base_type.generics().split_for_impl();
         let where_clause = self.generate_where_clause(false);
 
-        quote::quote!(
-            const _ : () = {
-                #[automatically_derived]
-                impl #impl_generics approx::RelativeEq for #struct_name #ty_generics
-                #where_clause
-                {
-                    fn default_max_relative() -> Self::Epsilon {
-                        #max_relative_default_value
-                    }
+        match &self.base_type {
+            #[allow(unused)]
+            BaseType::Struct {
+                item_struct,
+                fields_with_args,
+            } => {
+                let fields = self.get_rel_eq_fields(fields_with_args);
 
-                    fn relative_eq(
-                        &self,
-                        other: &Self,
-                        epsilon: Self::Epsilon,
-                        max_relative: Self::Epsilon
-                    ) -> bool {
-                        #(#fields)*
-                        true
-                    }
-                }
-            };
-        )
+                quote::quote!(
+                    const _ : () = {
+                        #[automatically_derived]
+                        impl #impl_generics approx::RelativeEq for #obj_name #ty_generics
+                        #where_clause
+                        {
+                            fn default_max_relative() -> Self::Epsilon {
+                                #max_relative_default_value
+                            }
+
+                            fn relative_eq(
+                                &self,
+                                other: &Self,
+                                epsilon: Self::Epsilon,
+                                max_relative: Self::Epsilon
+                            ) -> bool {
+                                #(#fields)*
+                                true
+                            }
+                        }
+                    };
+                )
+            }
+            #[allow(unused)]
+            BaseType::Enum {
+                item_enum,
+                variants_with_args,
+            } => {
+                quote::quote!()
+            }
+        }
     }
 }
 
