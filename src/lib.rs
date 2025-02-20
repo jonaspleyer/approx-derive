@@ -585,7 +585,7 @@ impl AbsDiffEqParser {
         idents: Option<(syn::Ident, syn::Ident)>,
     ) -> Option<FieldFormatted> {
         // Determine if this field will be skipped and exit early
-        if field_with_args.args.skip {
+        if let Some(true) = field_with_args.args.skip {
             return None;
         }
 
