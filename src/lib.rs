@@ -559,8 +559,8 @@ impl AbsDiffEqParser {
 
     fn generics_involved(&self) -> bool {
         let parent = self.get_epsilon_parent_type();
-        self.item_struct
-            .generics
+        self.base_type
+            .generics()
             .params
             .iter()
             .any(|param| quote::quote!(#param).to_string() == parent.to_string())
@@ -756,7 +756,7 @@ impl AbsDiffEqParser {
 
     fn generate_where_clause(&self, abs_diff_eq: bool) -> proc_macro2::TokenStream {
         let (epsilon_type, _) = self.get_epsilon_type_and_default_value();
-        let (_, _, where_clause) = self.item_struct.generics.split_for_impl();
+        let (_, _, where_clause) = self.base_type.generics().split_for_impl();
         let trait_bound = match abs_diff_eq {
             true => quote::quote!(approx::AbsDiffEq),
             false => quote::quote!(approx::RelativeEq),
@@ -783,10 +783,11 @@ impl AbsDiffEqParser {
     }
 
     fn implement_derive_abs_diff_eq(&self) -> proc_macro2::TokenStream {
-        let struct_name = &self.item_struct.ident;
+        let struct_name = &self.base_type.ident();
         let (epsilon_type, epsilon_default_value) = self.get_epsilon_type_and_default_value();
         let fields = self.get_abs_diff_eq_fields();
-        let (impl_generics, ty_generics, _) = self.item_struct.generics.split_for_impl();
+
+        let (impl_generics, ty_generics, _) = self.base_type.generics().split_for_impl();
         let where_clause = self.generate_where_clause(true);
 
         quote::quote!(
@@ -811,10 +812,11 @@ impl AbsDiffEqParser {
     }
 
     fn implement_derive_rel_diff_eq(&self) -> proc_macro2::TokenStream {
-        let struct_name = &self.item_struct.ident;
+        let obj_name = &self.base_type.ident();
         let max_relative_default_value = self.get_max_relative_default_value();
         let fields = self.get_rel_eq_fields();
-        let (impl_generics, ty_generics, _) = self.item_struct.generics.split_for_impl();
+
+        let (impl_generics, ty_generics, _) = self.base_type.generics().split_for_impl();
         let where_clause = self.generate_where_clause(false);
 
         quote::quote!(
