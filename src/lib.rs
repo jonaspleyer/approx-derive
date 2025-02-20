@@ -512,13 +512,26 @@ impl AbsDiffEqParser {
             .clone()
             .map(|x| quote::quote!(#x))
             .or_else(|| {
-                self.fields_with_args
-                    .iter()
-                    .find(|field| !field.args.skip)
-                    .map(|field| {
-                        let field_type = &field.ty;
-                        quote::quote!(#field_type)
-                    })
+                #[allow(unused)]
+                match &self.base_type {
+                    BaseType::Struct {
+                        item_struct,
+                        fields_with_args,
+                    } => fields_with_args
+                        .iter()
+                        .find(|f| f.args.skip.is_none_or(|x| x == false)),
+                    BaseType::Enum {
+                        item_enum,
+                        variants_with_args,
+                    } => variants_with_args
+                        .iter()
+                        .flat_map(|v| v.fields_with_args.iter())
+                        .find(|f| f.args.skip.is_none_or(|x| x == false)),
+                }
+                .map(|field| {
+                    let field_type = &field.ty;
+                    quote::quote!(#field_type)
+                })
             })
             .or_else(|| Some(quote::quote!(f64)))
             .unwrap()
