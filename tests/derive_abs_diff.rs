@@ -242,7 +242,7 @@ fn derive_abs_diff_mapping() {
     #[derive(AbsDiffEq, PartialEq, Debug)]
     struct Cat {
         weight: f32,
-        #[approx(map = |x| {Some(&0f32)})]
+        #[approx(map = |_| {Some(&0f32)})]
         birthday: String,
     }
     let c1 = Cat {
