@@ -6,7 +6,7 @@
 //!
 //! These derive macros only implement both traits with `...<Rhs = Self>`.
 //! The macros infer the `EPSILON` type of the [AbsDiffEq] trait by looking
-//! at the type of the first struct field or any type specified by the user.
+//! at the type of the first struct or enum field or any type specified by the user.
 //!
 //! This table lists all attributes which can be used to customize the derived traits.
 //! They are ordered in descending priority, meaning setting the `#[approx(equal)]` will overwrite
@@ -20,12 +20,12 @@
 //! | [`#[approx(map = ..)]`](#mapping-values) | Maps values before comparing them. |
 //! | [`#[approx(static_epsilon = ..)]`](#static-values) | Defines a static epsilon value for this particular field. |
 //! | | |
-//! | **Struct Attribute** | |
+//! | **Object Attribute** | |
 //! | [`#[approx(default_epsilon = ...)]`](#default-epsilon) | Sets the default epsilon value |
 //! | [`#[approx(default_max_relative = ...)]`](#default-max-relative) | Sets the default `max_relative` value. |
 //! | [`#[approx(epsilon_type = ...)]`](#epsilon-type) | Sets the type of the epsilon value |
 //!
-//! The following example explains a possible use-case.
+//! # Usage
 //!
 //! ```
 //! use approx_derive::AbsDiffEq;
@@ -72,6 +72,41 @@
 //! ```
 //! The [AbsDiffEq] derive macro calls the `abs_diff_eq` method repeatedly on all fields
 //! to determine if all are matching.
+//!
+//! ## Enums
+//! Since `approx-derive` supports enums since `0.2`
+//!
+//! ```
+//! use approx_derive::AbsDiffEq;
+//!
+//! #[derive(AbsDiffEq, PartialEq, Debug)]
+//! enum Position {
+//!     Smooth { x: f32, y: f32, },
+//!     #[approx(cast_value)]
+//!     Lattice { x: isize, y: isize },
+//! }
+//!
+//! let p1 = Position::Smooth { x: 1.0, y: 1.1 };
+//! let p2 = Position::Smooth { x: 1.1, y: 1.0};
+//! let p3 = Position::Lattice { x: 1, y: 1 };
+//!
+//! approx::assert_abs_diff_eq!(p1, p2, epsilon=0.2);
+//! ```
+//!
+//! ```should_panic
+//! # use approx_derive::AbsDiffEq;
+//! # #[derive(AbsDiffEq, PartialEq, Debug)]
+//! # enum Position {
+//! #     Smooth { x: f32, y: f32, },
+//! #     #[approx(cast_value)]
+//! #     Lattice { x: isize, y: isize },
+//! # }
+//! # let p1 = Position::Smooth { x: 1.0, y: 1.1 };
+//! # let p3 = Position::Lattice { x: 1, y: 1 };
+//! // Note! Different enum variants can never be equal!
+//! approx::assert_abs_diff_eq!(p1, p3, epsilon = 1000.0);
+//! ```
+//!
 //!
 //! # Field Attributes
 //! ## Skipping Fields
@@ -275,10 +310,10 @@
 //! // b field values.
 //! approx::assert_abs_diff_ne!(r1, r2, epsilon = 1e-4);
 //! ```
-//! # Struct Attributes
+//! # Object Attributes
 //! ## Default Epsilon
 //! The [AbsDiffEq] trait allows to specify a default value for its `EPSILON` associated type.
-//! We can control this value by specifying it on a struct level.
+//! We can control this value by specifying it on an object level.
 //!
 //! ```
 //! # use approx_derive::*;
@@ -329,7 +364,7 @@
 //! ```
 //! ## Epsilon Type
 //! When specifying nothing, the macros will infer the `EPSILON` type from the type of the
-//! first struct field.
+//! first struct/enum field (the order in which it is parsed).
 //! This can be problematic in certain scenarios which is why we can also manually specify this
 //! type.
 //!
