@@ -10,6 +10,12 @@ pub struct FieldWithArgs {
     pub args: FieldArgs,
 }
 
+pub struct EnumVariant {
+    pub ident: syn::Ident,
+    pub discriminant: Option<syn::Expr>,
+    pub fields_with_args: Vec<FieldWithArgs>,
+}
+
 impl FieldWithArgs {
     pub fn from_field(field: &syn::Field) -> syn::Result<Self> {
         let ident = field.ident.clone();
@@ -21,12 +27,31 @@ impl FieldWithArgs {
 
 /// All arguments that can be specified and parsed in a field
 pub struct FieldArgs {
-    pub skip: bool,
-    pub set_equal: bool,
+    pub skip: Option<bool>,
+    pub set_equal: Option<bool>,
     pub cast_strategy: Option<TypeCast>,
     pub epsilon_static_value: Option<syn::Expr>,
     pub max_relative_static_value: Option<syn::Expr>,
     pub mapping: Option<syn::Expr>,
+}
+
+impl FieldArgs {
+    pub fn patch_if_not_exists(&mut self, other: &Self) {
+        *self = Self {
+            skip: self.skip.or(other.skip),
+            set_equal: self.set_equal.or(other.set_equal),
+            cast_strategy: self.cast_strategy.clone().or(other.cast_strategy.clone()),
+            epsilon_static_value: self
+                .epsilon_static_value
+                .clone()
+                .or(other.epsilon_static_value.clone()),
+            max_relative_static_value: self
+                .max_relative_static_value
+                .clone()
+                .or(other.max_relative_static_value.clone()),
+            mapping: self.mapping.clone().or(other.mapping.clone()),
+        };
+    }
 }
 
 /// Every value argument specified by `#[approx(value)]`
@@ -105,11 +130,12 @@ pub enum StructValueArg {
 }
 
 impl StructValueArg {
-    pub fn from_ident(ident: &syn::Ident) -> syn::Result<Self> {
-        match ident.to_string().as_str() {
-            _ => Ok(Self::None),
-            // _ => Err(syn::Error::new(ident.span(), "Not a valid value")),
-        }
+    pub fn from_ident(_ident: &syn::Ident) -> syn::Result<Self> {
+        // match ident.to_string().as_str() {
+        //     _ => Ok(Self::None),
+        //     // _ => Err(syn::Error::new(ident.span(), "Not a valid value")),
+        // }
+        Ok(Self::None)
     }
 }
 
@@ -151,7 +177,7 @@ impl syn::parse::Parse for StructArgGeneric {
 }
 
 impl StructArgs {
-    pub fn from_attrs(attributes: &Vec<syn::Attribute>) -> syn::Result<Self> {
+    pub fn from_attrs(attributes: &[syn::Attribute]) -> syn::Result<Self> {
         let mut epsilon_type = None;
         let mut default_epsilon_value = None;
         let mut default_max_relative_value = None;
@@ -181,9 +207,9 @@ impl StructArgs {
 }
 
 impl FieldArgs {
-    fn from_attrs(attributes: &Vec<syn::Attribute>) -> syn::Result<Self> {
-        let mut skip = false;
-        let mut set_equal = false;
+    pub fn from_attrs(attributes: &[syn::Attribute]) -> syn::Result<Self> {
+        let mut skip = None;
+        let mut set_equal = None;
         let mut mapping = None;
         let mut cast_strategy = None;
         let mut epsilon_static_value = None;
@@ -193,11 +219,11 @@ impl FieldArgs {
             if attribute.path().is_ident("approx") {
                 let arg: FieldArgGeneric = attribute.parse_args()?;
                 match arg {
-                    FieldArgGeneric::Value(FieldValueArg::Skip) => skip = true,
+                    FieldArgGeneric::Value(FieldValueArg::Skip) => skip = Some(true),
                     FieldArgGeneric::Value(FieldValueArg::CastStrategy(strategy)) => {
                         cast_strategy = Some(strategy)
                     }
-                    FieldArgGeneric::Value(FieldValueArg::Equal) => set_equal = true,
+                    FieldArgGeneric::Value(FieldValueArg::Equal) => set_equal = Some(true),
                     FieldArgGeneric::KeyValue(FieldKeyValueArg::EpsilonStatic(epsilon_static)) => {
                         epsilon_static_value = epsilon_static;
                     }
