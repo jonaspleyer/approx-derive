@@ -800,6 +800,50 @@ impl AbsDiffEqParser {
             .collect()
     }
 
+    fn get_abs_diff_eq_single_field(
+        &self,
+        xi: syn::Ident,
+        yi: syn::Ident,
+        field_with_args: &FieldWithArgs,
+    ) -> Option<proc_macro2::TokenStream> {
+        if let Some(FieldFormatted {
+            base_type,
+            own_field,
+            other_field,
+            epsilon,
+            #[allow(unused)]
+            max_relative,
+            set_equal,
+            mapping,
+        }) = self.format_nth_field(0, field_with_args, Some((xi, yi)))
+        {
+            if set_equal {
+                Some(quote::quote!(#own_field == #other_field))
+            } else if let Some(map) = mapping {
+                Some(quote::quote!(
+                    (if let ((Some(a), Some(b))) = (
+                        (#map)(#own_field),
+                        (#map)(#other_field)
+                    ) {
+                        <#base_type as approx::AbsDiffEq>::abs_diff_eq(&a, &b, #epsilon)
+                    } else {
+                        false
+                    })
+                ))
+            } else {
+                Some(quote::quote!(
+                    <#base_type as approx::AbsDiffEq>::abs_diff_eq(
+                        &#own_field,
+                        &#other_field,
+                        #epsilon
+                    )
+                ))
+            }
+        } else {
+            None
+        }
+    }
+
     fn generate_where_clause(&self, abs_diff_eq: bool) -> proc_macro2::TokenStream {
         let (epsilon_type, _) = self.get_epsilon_type_and_default_value();
         let (_, _, where_clause) = self.base_type.generics().split_for_impl();
