@@ -494,6 +494,7 @@ impl syn::parse::Parse for AbsDiffEqParser {
     }
 }
 
+#[derive(Debug)]
 struct FieldFormatted {
     base_type: proc_macro2::TokenStream,
     own_field: proc_macro2::TokenStream,
