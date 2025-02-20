@@ -718,50 +718,86 @@ impl AbsDiffEqParser {
         fields.collect()
     }
 
-    fn get_rel_eq_fields(&self) -> Vec<proc_macro2::TokenStream> {
-        let fields = self
-            .fields_with_args
+    fn get_abs_diff_eq_enum_variants(
+        &self,
+        variants_with_args: &[EnumVariant],
+    ) -> Vec<proc_macro2::TokenStream> {
+        variants_with_args
             .iter()
-            .enumerate()
-            .filter_map(|(n, field_with_args)| {
-                if let Some(FieldFormatted {
-                    base_type,
-                    own_field,
-                    other_field,
-                    epsilon,
-                    max_relative,
-                    set_equal,
-                    mapping,
-                }) = self.format_nth_field(n, field_with_args)
+            .map(|variant_with_args| {
+                let variant = &variant_with_args.ident;
+                use syn::spanned::Spanned;
+
+                let gen_field_names = |var: &str| -> Vec<syn::Ident> {
+                    variant_with_args
+                        .fields_with_args
+                        .iter()
+                        .enumerate()
+                        .map(|(n, field)| syn::Ident::new(&format!("{var}{n}"), field.ident.span()))
+                        .collect()
+                };
+                if variant_with_args
+                    .fields_with_args
+                    .first()
+                    .and_then(|f| f.ident.clone())
+                    .is_some()
                 {
-                    if set_equal {
-                        Some(quote::quote!(#own_field == #other_field &&))
-                    } else if let Some(map) = mapping {
-                        Some(quote::quote!(
-                            (if let ((Some(a), Some(b))) = (
-                                (#map)(#own_field),
-                                (#map)(#other_field)
-                            ) {
-                                approx::RelativeEq::relative_eq(&a, &b, #epsilon, #max_relative)
-                            } else {
-                                false
-                            }) &&
-                        ))
-                    } else {
-                        Some(quote::quote!(
-                            <#base_type as approx::RelativeEq>::relative_eq(
-                                #own_field,
-                                #other_field,
-                                #epsilon,
-                                #max_relative
-                            ) &&
-                        ))
-                    }
+                    let field_placeholders1 = gen_field_names("x");
+                    let field_placeholders2 = gen_field_names("y");
+                    let gen_combos = |iterator: Vec<syn::Ident>| {
+                        iterator
+                            .iter()
+                            .zip(&variant_with_args.fields_with_args)
+                            .map(|(fph, fwa)| {
+                                let id = &fwa.ident;
+                                quote::quote!(#id: #fph)
+                            })
+                            .collect::<Vec<_>>()
+                    };
+                    let comps: Vec<_> = field_placeholders1
+                        .iter()
+                        .zip(field_placeholders2.iter())
+                        .zip(variant_with_args.fields_with_args.iter())
+                        .map(|((xi, yi), field)| {
+                            self.get_abs_diff_eq_single_field(xi.clone(), yi.clone(), field)
+                        })
+                        .collect();
+                    let field_name_placeholder_combos1 = gen_combos(field_placeholders1);
+                    let field_name_placeholder_combos2 = gen_combos(field_placeholders2);
+                    quote::quote!(
+                        (
+                            Self:: #variant {
+                                #(#field_name_placeholder_combos1),*
+                            },
+                            Self:: #variant {
+                                #(#field_name_placeholder_combos2),*
+                            }
+                        ) => #(#comps) &&*,
+                    )
+                } else if !variant_with_args.fields_with_args.is_empty() {
+                    let field_names1 = gen_field_names("x");
+                    let field_names2 = gen_field_names("y");
+                    let comps: Vec<_> = field_names1
+                        .iter()
+                        .zip(field_names2.iter())
+                        .zip(variant_with_args.fields_with_args.iter())
+                        .map(|((xi, yi), field)| {
+                            self.get_abs_diff_eq_single_field(xi.clone(), yi.clone(), field)
+                        })
+                        .collect();
+                    quote::quote!(
+                        (
+                            Self:: #variant (#(#field_names1),*),
+                            Self:: #variant (#(#field_names2),*)
+                        ) => {#(#comps) &&*},
+                    )
                 } else {
-                    None
+                    quote::quote!(
+                        (Self:: #variant, Self:: #variant) => true,
+                    )
                 }
-            });
-        fields.collect()
+            })
+            .collect()
     }
 
     fn generate_where_clause(&self, abs_diff_eq: bool) -> proc_macro2::TokenStream {
