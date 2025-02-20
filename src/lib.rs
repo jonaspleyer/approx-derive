@@ -582,6 +582,7 @@ impl AbsDiffEqParser {
         &self,
         n: usize,
         field_with_args: &FieldWithArgs,
+        idents: Option<(syn::Ident, syn::Ident)>,
     ) -> Option<FieldFormatted> {
         // Determine if this field will be skipped and exit early
         if field_with_args.args.skip {
@@ -593,9 +594,16 @@ impl AbsDiffEqParser {
 
         // Save field name and type in variables for easy access
         use std::str::FromStr;
-        let field_name = match &field_with_args.ident {
-            Some(id) => quote::quote!(#id),
-            None => proc_macro2::TokenStream::from_str(&format!("{}", n)).unwrap(),
+        let (field_name1, field_name2) = match (&field_with_args.ident, idents) {
+            (Some(id), None) => (quote::quote!(self.#id), quote::quote!(other.#id)),
+            (None, None) => {
+                let field_number = proc_macro2::TokenStream::from_str(&format!("{}", n)).unwrap();
+                (
+                    quote::quote!(self.#field_number),
+                    quote::quote!(other.#field_number),
+                )
+            }
+            (_, Some((id1, id2))) => (quote::quote!(#id1), quote::quote!(#id2)),
         };
         let field_type = &field_with_args.ty;
 
@@ -622,22 +630,22 @@ impl AbsDiffEqParser {
         let (base_type, own_field, other_field, epsilon, max_relative) = match cast_strategy {
             Some(TypeCast::CastField) => (
                 quote::quote!(#parent_type),
-                quote::quote!(&(self.#field_name as #parent_type)),
-                quote::quote!(&(other.#field_name as #parent_type)),
+                quote::quote!(&(#field_name1.clone() as #parent_type)),
+                quote::quote!(&(#field_name2.clone() as #parent_type)),
                 quote::quote!(#epsilon.clone()),
                 quote::quote!(#max_relative.clone()),
             ),
             Some(TypeCast::CastValue) => (
                 quote::quote!(#field_type),
-                quote::quote!(&self.#field_name),
-                quote::quote!(&other.#field_name),
-                quote::quote!(#epsilon.clone() as #field_type),
-                quote::quote!(#max_relative.clone() as #field_type),
+                quote::quote!(&#field_name1),
+                quote::quote!(&#field_name2),
+                quote::quote!((#epsilon.clone() as #field_type)),
+                quote::quote!((#max_relative.clone() as #field_type)),
             ),
             None => (
                 quote::quote!(#parent_type),
-                quote::quote!(&self.#field_name),
-                quote::quote!(&other.#field_name),
+                quote::quote!(&#field_name1),
+                quote::quote!(&#field_name2),
                 quote::quote!(#epsilon.clone()),
                 quote::quote!(#max_relative.clone()),
             ),
@@ -656,7 +664,7 @@ impl AbsDiffEqParser {
             other_field,
             epsilon,
             max_relative,
-            set_equal: field_with_args.args.set_equal,
+            set_equal: field_with_args.args.set_equal.unwrap_or(false),
             mapping,
         })
     }
