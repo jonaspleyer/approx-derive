@@ -311,3 +311,36 @@ fn derive_rel_diff_enum_2() {
     approx::assert_relative_ne!(p2, p3);
     approx::assert_relative_ne!(p3, p1);
 }
+
+#[test]
+fn derive_rel_diff_enum3() {
+    #[derive(RelativeEq, PartialEq, Debug)]
+    #[allow(unused)]
+    enum SecurityLevel {
+        Pleb = 0,
+        ParkingLotGuard = 1,
+        FrontDesk = 2,
+        Secretary = 3,
+        Agent = 6,
+        Chief = 10,
+        President = 11,
+        Illuminati = 100,
+    }
+
+    let s1 = SecurityLevel::Pleb;
+    let s2 = SecurityLevel::ParkingLotGuard;
+    let s3 = SecurityLevel::FrontDesk;
+    let s4 = SecurityLevel::Secretary;
+    let s5 = SecurityLevel::Agent;
+    let s6 = SecurityLevel::Chief;
+    let s7 = SecurityLevel::President;
+    let s8 = SecurityLevel::Illuminati;
+
+    approx::assert_relative_ne!(s1, s2);
+    approx::assert_relative_ne!(s2, s3);
+    approx::assert_relative_ne!(s3, s1);
+
+    approx::assert_relative_ne!(s6, s7, max_relative = 2.0);
+    approx::assert_relative_ne!(s4, s5, max_relative = 10.0);
+    approx::assert_relative_ne!(s4, s8, max_relative = 100.0);
+}
