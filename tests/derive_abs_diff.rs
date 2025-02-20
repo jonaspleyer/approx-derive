@@ -378,3 +378,65 @@ fn derive_abs_diff_equal_enum_cast() {
     approx::assert_abs_diff_eq!(l6, l7, epsilon = 1.0);
     approx::assert_abs_diff_ne!(l6, l7, epsilon = 0.01);
 }
+
+#[test]
+fn derive_abs_diff_eq_nested_struct() {
+    #[derive(AbsDiffEq, PartialEq, Debug)]
+    struct Point {
+        x: f32,
+        y: f32,
+    }
+    #[derive(AbsDiffEq, PartialEq, Debug)]
+    struct Player {
+        health: f32,
+        position: Point,
+    }
+
+    let p1 = Player {
+        health: 0.5,
+        position: Point { x: 1.0, y: 2.0 },
+    };
+    let p2 = Player {
+        health: 0.6,
+        position: Point { x: 1.1, y: 2.1 },
+    };
+    approx::assert_abs_diff_eq!(p1, p2, epsilon = 0.2);
+}
+
+#[test]
+fn derive_abs_diff_equal_enum_nested() {
+    #[derive(AbsDiffEq, PartialEq, Debug)]
+    struct SampledFloat {
+        min: f32,
+        max: f32,
+        initial: f32,
+        #[approx(equal)]
+        individual: bool,
+    }
+
+    #[derive(AbsDiffEq, PartialEq, Debug)]
+    #[approx(epsilon_type = f32)]
+    enum Parameter {
+        Fix(f32),
+        Sampled(SampledFloat),
+    }
+
+    let p1 = Parameter::Fix(1.0);
+    let p2 = Parameter::Fix(1.1);
+    approx::assert_abs_diff_eq!(p1, p2, epsilon = 0.2);
+
+    let p3 = Parameter::Sampled(SampledFloat {
+        min: 1.0,
+        max: 1.2,
+        initial: 1.1,
+        individual: false,
+    });
+    let p4 = Parameter::Sampled(SampledFloat {
+        min: 1.1,
+        max: 1.3,
+        initial: 1.2,
+        individual: false,
+    });
+    approx::assert_abs_diff_eq!(p3, p4, epsilon = 0.2);
+    approx::assert_abs_diff_ne!(p3, p4, epsilon = 0.01);
+}
