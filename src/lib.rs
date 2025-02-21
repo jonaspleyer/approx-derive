@@ -234,6 +234,7 @@
 //!     0,
 //! ));
 //! ```
+//! When we use the `#[approx(cast_value)]` syntax, we get a different result.
 //! ```
 //! # use approx::*;
 //! # use approx_derive::*;
