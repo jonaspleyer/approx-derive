@@ -29,6 +29,7 @@
 //! # Usage
 //!
 //! ```
+//! # use approx::*;
 //! use approx_derive::AbsDiffEq;
 //!
 //! // Define a new type and derive the AbsDiffEq trait
@@ -42,7 +43,7 @@
 //! // with respect to geiven epsilon.
 //! let p1 = Position { x: 1.01, y: 2.36 };
 //! let p2 = Position { x: 0.99, y: 2.38 };
-//! approx::assert_abs_diff_eq!(p1, p2, epsilon = 0.021);
+//! assert_abs_diff_eq!(p1, p2, epsilon = 0.021);
 //! ```
 //! In this case, the generated code looks something like this:
 //! ```ignore
@@ -78,6 +79,7 @@
 //! Since `approx-derive` supports enums since `0.2`
 //!
 //! ```
+//! # use approx::*;
 //! use approx_derive::AbsDiffEq;
 //!
 //! #[derive(AbsDiffEq, PartialEq, Debug)]
@@ -91,10 +93,11 @@
 //! let p2 = Position::Smooth { x: 1.1, y: 1.0};
 //! let p3 = Position::Lattice { x: 1, y: 1 };
 //!
-//! approx::assert_abs_diff_eq!(p1, p2, epsilon=0.2);
+//! assert_abs_diff_eq!(p1, p2, epsilon=0.2);
 //! ```
 //!
 //! ```should_panic
+//! # use approx::*;
 //! # use approx_derive::AbsDiffEq;
 //! # #[derive(AbsDiffEq, PartialEq, Debug)]
 //! # enum Position {
@@ -105,7 +108,7 @@
 //! # let p1 = Position::Smooth { x: 1.0, y: 1.1 };
 //! # let p3 = Position::Lattice { x: 1, y: 1 };
 //! // Note! Different enum variants can never be equal!
-//! approx::assert_abs_diff_eq!(p1, p3, epsilon = 1000.0);
+//! assert_abs_diff_eq!(p1, p3, epsilon = 1000.0);
 //! ```
 //!
 //!
@@ -114,6 +117,7 @@
 //!
 //! Sometimes, we only want to compare certain fields and omit others completely.
 //! ```
+//! # use approx::*;
 //! # use approx_derive::*;
 //! #[derive(AbsDiffEq, PartialEq, Debug)]
 //! struct Player {
@@ -138,7 +142,7 @@
 //!     id: (22, 0),
 //! };
 //!
-//! approx::assert_abs_diff_eq!(player1, player2, epsilon = 0.5);
+//! assert_abs_diff_eq!(player1, player2, epsilon = 0.5);
 //! ```
 //!
 //! ## Testing for [Equality](core::cmp::Eq)
@@ -146,6 +150,7 @@
 //! When identical equality is desired, we can specify this with the `#[approx(equal)]` attribute.
 //!
 //! ```
+//! # use approx::*;
 //! # use approx_derive::*;
 //! #[derive(AbsDiffEq, PartialEq, Debug)]
 //! struct Prediction {
@@ -178,6 +183,7 @@
 //! After all, we should specify how this type mismatch will be handled.
 //!
 //! ```compile_fail
+//! # use approx::*;
 //! # use approx_derive::*;
 //! #[derive(AbsDiffEq, PartialEq, Debug)]
 //! struct MyStruct {
@@ -194,6 +200,7 @@
 //! We can check this by testing if a change in the size of `f64::MIN_POSITIVE` would get lost by
 //! this procedure.
 //! ```
+//! # use approx::*;
 //! # use approx_derive::*;
 //! # #[derive(RelativeEq, PartialEq, Debug)]
 //! # struct MyStruct {
@@ -209,7 +216,7 @@
 //!     v1: 1.0,
 //!     v2: 3.0 + f64::MIN_POSITIVE,
 //! };
-//! approx::assert_relative_eq!(ms1, ms2);
+//! assert_relative_eq!(ms1, ms2);
 //! ```
 //!
 //! ### Example 2
@@ -280,7 +287,7 @@
 //! #   height_in_meters: 100.0,
 //! #   area_in_meters_squared: 30.5,
 //! # };
-//! # approx::assert_abs_diff_ne!(t1, t2, epsilon = 0.03);
+//! # assert_abs_diff_ne!(t1, t2, epsilon = 0.03);
 //! ```
 //!
 //! This functionality can also be useful when having more complex datatypes.
@@ -317,6 +324,7 @@
 //! ## Static Values
 //! We can force a static `EPSILON` or `max_relative` value for individual fields.
 //! ```
+//! # use approx::*;
 //! # use approx_derive::*;
 //! #[derive(AbsDiffEq, PartialEq, Debug)]
 //! struct Rectangle {
@@ -340,13 +348,13 @@
 //!
 //! // This is always true although the epsilon is smaller than the
 //! // difference between fields a and b respectively.
-//! approx::assert_abs_diff_eq!(r1, r2, epsilon = 1e-1);
-//! approx::assert_abs_diff_eq!(r1, r2, epsilon = 1e-2);
-//! approx::assert_abs_diff_eq!(r1, r2, epsilon = 1e-3);
+//! assert_abs_diff_eq!(r1, r2, epsilon = 1e-1);
+//! assert_abs_diff_eq!(r1, r2, epsilon = 1e-2);
+//! assert_abs_diff_eq!(r1, r2, epsilon = 1e-3);
 //!
 //! // Here, the epsilon value has become larger than the difference between the
 //! // b field values.
-//! approx::assert_abs_diff_ne!(r1, r2, epsilon = 1e-4);
+//! assert_abs_diff_ne!(r1, r2, epsilon = 1e-4);
 //! ```
 //! # Object Attributes
 //! ## Default Epsilon
@@ -355,6 +363,7 @@
 //!
 //! ```
 //! # use approx_derive::*;
+//! # use approx::*;
 //! #[derive(AbsDiffEq, PartialEq, Debug)]
 //! #[approx(default_epsilon = 10)]
 //! struct Benchmark {
@@ -372,15 +381,16 @@
 //! };
 //!
 //! // When testing with not additional arguments, the results match
-//! approx::assert_abs_diff_eq!(benchmark1, benchmark2);
+//! assert_abs_diff_eq!(benchmark1, benchmark2);
 //! // Once we specify a lower epsilon, the values do not agree anymore.
-//! approx::assert_abs_diff_ne!(benchmark1, benchmark2, epsilon = 5);
+//! assert_abs_diff_ne!(benchmark1, benchmark2, epsilon = 5);
 //! ```
 //!
 //! ## Default Max Relative
 //! Similarly to [Default Epsilon], we can also choose a default max_relative devaition.
 //! ```
 //! # use approx_derive::*;
+//! # use approx::*;
 //! #[derive(RelativeEq, PartialEq, Debug)]
 //! #[approx(default_max_relative = 0.1)]
 //! struct Benchmark {
@@ -397,8 +407,8 @@
 //!     warm_up: 0.59015897,
 //! };
 //!
-//! approx::assert_relative_eq!(bench1, bench2);
-//! approx::assert_relative_ne!(bench1, bench2, max_relative = 0.05);
+//! assert_relative_eq!(bench1, bench2);
+//! assert_relative_ne!(bench1, bench2, max_relative = 0.05);
 //! ```
 //! ## Epsilon Type
 //! When specifying nothing, the macros will infer the `EPSILON` type from the type of the
@@ -408,6 +418,7 @@
 //!
 //! ```
 //! # use approx_derive::*;
+//! # use approx::*;
 //! #[derive(RelativeEq, PartialEq, Debug)]
 //! #[approx(epsilon_type = f32)]
 //! struct Car {
@@ -425,8 +436,8 @@
 //!     horse_power: 117.45,
 //! };
 //!
-//! approx::assert_relative_eq!(car1, car2, max_relative = 0.05);
-//! approx::assert_relative_ne!(car1, car2, max_relative = 0.01);
+//! assert_relative_eq!(car1, car2, max_relative = 0.05);
+//! assert_relative_ne!(car1, car2, max_relative = 0.01);
 //! ```
 
 mod abs_diff_eq;
