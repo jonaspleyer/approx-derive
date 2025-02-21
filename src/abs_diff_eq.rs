@@ -27,14 +27,14 @@ impl AbsDiffEqParser {
                         fields_with_args,
                     } => fields_with_args
                         .iter()
-                        .find(|f| f.args.skip.is_none_or(|x| x == false)),
+                        .find(|f| f.args.skip.is_none_or(|x| !x)),
                     BaseType::Enum {
                         item_enum,
                         variants_with_args,
                     } => variants_with_args
                         .iter()
                         .flat_map(|v| v.fields_with_args.iter())
-                        .find(|f| f.args.skip.is_none_or(|x| x == false)),
+                        .find(|f| f.args.skip.is_none_or(|x| !x)),
                 }
                 .map(|field| {
                     let field_type = &field.ty;
