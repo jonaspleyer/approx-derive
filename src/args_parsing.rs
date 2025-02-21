@@ -105,6 +105,7 @@ pub struct StructArgs {
     pub epsilon_type: Option<syn::Type>,
     pub default_epsilon_value: Option<syn::Expr>,
     pub default_max_relative_value: Option<syn::Expr>,
+    pub match_options: bool,
 }
 
 /// Generic Field argument which can be either value or key-value
@@ -127,16 +128,15 @@ impl syn::parse::Parse for FieldArgGeneric {
 }
 
 pub enum StructValueArg {
-    None,
+    MatchOptions,
 }
 
 impl StructValueArg {
-    pub fn from_ident(_ident: &syn::Ident) -> syn::Result<Self> {
-        // match ident.to_string().as_str() {
-        //     _ => Ok(Self::None),
-        //     // _ => Err(syn::Error::new(ident.span(), "Not a valid value")),
-        // }
-        Ok(Self::None)
+    pub fn from_ident(ident: &syn::Ident) -> syn::Result<Self> {
+        match ident.to_string().as_str() {
+            "match_options" => Ok(Self::MatchOptions),
+            _ => Err(syn::Error::new(ident.span(), "Not a valid value")),
+        }
     }
 }
 
@@ -182,9 +182,10 @@ impl StructArgs {
         let mut epsilon_type = None;
         let mut default_epsilon_value = None;
         let mut default_max_relative_value = None;
+        let mut match_options = false;
         for attribute in attributes.iter() {
             match attribute.parse_args() {
-                Ok(StructArgGeneric::Value(StructValueArg::None)) => (),
+                Ok(StructArgGeneric::Value(StructValueArg::MatchOptions)) => match_options = true,
                 Ok(StructArgGeneric::KeyValue(StructKeyValueArg::EpsilonType(epsilon_ty))) => {
                     epsilon_type = Some(epsilon_ty)
                 }
@@ -203,6 +204,7 @@ impl StructArgs {
             epsilon_type,
             default_epsilon_value,
             default_max_relative_value,
+            match_options,
         })
     }
 }
