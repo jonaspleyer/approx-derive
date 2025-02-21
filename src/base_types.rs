@@ -128,4 +128,6 @@ pub struct FieldFormatted {
     pub max_relative: proc_macro2::TokenStream,
     pub mapping: Option<proc_macro2::TokenStream>,
     pub set_equal: bool,
+    // If this is Some type, we should be matching for this type
+    pub match_option: Option<proc_macro2::TokenStream>,
 }

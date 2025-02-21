@@ -113,7 +113,18 @@ impl AbsDiffEqParser {
             }
             (_, Some((id1, id2))) => (quote::quote!(#id1), quote::quote!(#id2)),
         };
-        let field_type = &field_with_args.ty;
+        let field_type: &syn::Type = &field_with_args.ty;
+        let mut match_option = None;
+        if let (syn::Type::Path(p), true) = (field_type, self.struct_args.match_options) {
+            if p.path.segments.first().is_some_and(|x| x.ident == "Option") {
+                if let syn::PathArguments::AngleBracketed(abga) =
+                    &p.path.segments.first().unwrap().arguments
+                {
+                    let generic_arg = abga.args.first().unwrap();
+                    match_option = Some(quote::quote!(#generic_arg));
+                }
+            }
+        }
 
         // Determine if the field or the value will be casted in any way
         let cast_strategy = &field_with_args.args.cast_strategy;
@@ -174,6 +185,7 @@ impl AbsDiffEqParser {
             max_relative,
             set_equal: field_with_args.args.set_equal.unwrap_or(false),
             mapping,
+            match_option,
         })
     }
 
@@ -195,6 +207,7 @@ impl AbsDiffEqParser {
                     max_relative,
                     set_equal,
                     mapping,
+                    match_option,
                 }) = self.format_nth_field(n, field_with_args, None)
                 {
                     if set_equal {
@@ -209,6 +222,19 @@ impl AbsDiffEqParser {
                             } else {
                                 false
                             }) &&
+                        ))
+                    } else if let Some(optional_ty) = match_option {
+                        Some(quote::quote!(
+                            match (#own_field, #other_field) {
+                                (Some(x), Some(y)) => <#optional_ty as approx::AbsDiffEq>::
+                                    abs_diff_eq(
+                                        &x,
+                                        &y,
+                                        #epsilon as <#optional_ty as approx::AbsDiffEq>::Epsilon,
+                                    ),
+                                (None, None) => true,
+                                _ => false,
+                            } &&
                         ))
                     } else {
                         Some(quote::quote!(
@@ -323,6 +349,7 @@ impl AbsDiffEqParser {
             max_relative,
             set_equal,
             mapping,
+            match_option,
         }) = self.format_nth_field(0, field_with_args, Some((xi, yi)))
         {
             if set_equal {
@@ -337,6 +364,19 @@ impl AbsDiffEqParser {
                     } else {
                         false
                     })
+                ))
+            } else if let Some(optional_ty) = match_option {
+                Some(quote::quote!(
+                    match (#own_field, #other_field) {
+                        (Some(x), Some(y)) => <#optional_ty as approx::AbsDiffEq>::
+                            abs_diff_eq(
+                                &x,
+                                &y,
+                                #epsilon as <#optional_ty as approx::AbsDiffEq>::Epsilon,
+                            ),
+                        (None, None) => true,
+                        _ => false,
+                    }
                 ))
             } else {
                 Some(quote::quote!(

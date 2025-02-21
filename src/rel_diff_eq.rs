@@ -17,6 +17,7 @@ impl AbsDiffEqParser {
             max_relative,
             set_equal,
             mapping,
+            match_option,
         }) = self.format_nth_field(0, field_with_args, Some((xi, yi)))
         {
             if set_equal {
@@ -31,6 +32,20 @@ impl AbsDiffEqParser {
                     } else {
                         false
                     })
+                ))
+            } else if let Some(optional_ty) = match_option {
+                Some(quote::quote!(
+                    match (#own_field, #other_field) {
+                        (Some(x), Some(y)) => <#optional_ty as approx::RelativeEq>::
+                            relative_eq(
+                                &x,
+                                &y,
+                                #epsilon as <#optional_ty as approx::AbsDiffEq>::Epsilon,
+                                #max_relative as <#optional_ty as approx::AbsDiffEq>::Epsilon,
+                            ),
+                        (None, None) => true,
+                        _ => false,
+                    }
                 ))
             } else {
                 Some(quote::quote!(
@@ -65,6 +80,7 @@ impl AbsDiffEqParser {
                     max_relative,
                     set_equal,
                     mapping,
+                    match_option,
                 }) = self.format_nth_field(n, field_with_args, None)
                 {
                     if set_equal {
@@ -79,6 +95,21 @@ impl AbsDiffEqParser {
                             } else {
                                 false
                             }) &&
+                        ))
+                    } else if let Some(optional_ty) = match_option {
+                        Some(quote::quote!(
+                            match (#own_field, #other_field) {
+                                (Some(x), Some(y)) => <#optional_ty as approx::RelativeEq>::
+                                    relative_eq(
+                                        &x,
+                                        &y,
+                                        #epsilon as <#optional_ty as approx::AbsDiffEq>::Epsilon,
+                                        #max_relative as
+                                            <#optional_ty as approx::AbsDiffEq>::Epsilon,
+                                    ),
+                                (None, None) => true,
+                                _ => false,
+                            } &&
                         ))
                     } else {
                         Some(quote::quote!(
