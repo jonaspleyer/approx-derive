@@ -187,16 +187,9 @@
 //!
 //! We can use the `#[approx(cast_field)]` and `#[approx(cast_value)]`
 //! attributes to achieve this goal.
-//! ```
-//! # use approx_derive::*;
-//! #[derive(AbsDiffEq, PartialEq, Debug)]
-//! struct MyStruct {
-//!     v1: f32,
-//!     #[approx(cast_field)]
-//!     v2: f64,
-//! }
-//! ```
-//! Now the second field will be casted to the type of the inferred epsilon value (`f32`).
+//!
+//! ### Example 1
+//! Here, the second field will be casted to the type of the inferred epsilon value (`f32`).
 //! We can check this by testing if a change in the size of `f64::MIN_POSITIVE` would get lost by
 //! this procedure.
 //! ```
@@ -216,6 +209,49 @@
 //!     v2: 3.0 + f64::MIN_POSITIVE,
 //! };
 //! approx::assert_relative_eq!(ms1, ms2);
+//! ```
+//!
+//! ### Example 2
+//! In this example, we cast the `f64` type to `isize`.
+//! ```
+//! # use approx::*;
+//! # use approx_derive::*;
+//! #[derive(AbsDiffEq, PartialEq, Debug)]
+//! struct MyStruct {
+//!     v1: isize,
+//!     #[approx(cast_field)]
+//!     v2: f64,
+//! }
+//! let ms1 = MyStruct { v1: 1, v2: 2.0 };
+//! let ms2 = MyStruct { v1: 1, v2: 2.1 };
+//! assert_abs_diff_eq!(ms1, ms2);
+//!
+//! // The underlying generated code performs
+//! assert!(isize::abs_diff_eq(
+//!     &(ms1.v2 as isize),
+//!     &(ms2.v2 as isize),
+//!     0,
+//! ));
+//! ```
+//! ```
+//! # use approx::*;
+//! # use approx_derive::*;
+//! #[derive(AbsDiffEq, PartialEq, Debug)]
+//! struct MyStruct2 {
+//!     v1: isize,
+//!     #[approx(cast_value)]
+//!     v2: f64,
+//! }
+//! let ms1 = MyStruct2 { v1: 1, v2: 2.0 };
+//! let ms2 = MyStruct2 { v1: 1, v2: 2.1 };
+//! assert_abs_diff_ne!(ms1, ms2);
+//!
+//! // Here, the epsilon value for isize is casted to f64
+//! assert!(!f64::abs_diff_eq(
+//!     &ms1.v2,
+//!     &ms2.v2,
+//!     0isize as f64
+//! ));
 //! ```
 //!
 //! ## Mapping Values
