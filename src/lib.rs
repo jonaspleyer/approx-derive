@@ -25,6 +25,7 @@
 //! | [`#[approx(default_epsilon = ...)]`](#default-epsilon) | Sets the default epsilon value |
 //! | [`#[approx(default_max_relative = ...)]`](#default-max-relative) | Sets the default `max_relative` value. |
 //! | [`#[approx(epsilon_type = ...)]`](#epsilon-type) | Sets the type of the epsilon value |
+//! | [`#[approx(match_options)]`](#match-options) | Tries to match contents of options. |
 //!
 //! # Usage
 //!
@@ -438,6 +439,49 @@
 //!
 //! assert_relative_eq!(car1, car2, max_relative = 0.05);
 //! assert_relative_ne!(car1, car2, max_relative = 0.01);
+//! ```
+//!
+//! ## Match Options
+//! In order to not having to apply `#[approx(equal)]` for every `Option<..>` field, we can use the
+//! `#[approx(match_options)]` object attribute to signal that every occurring option should be
+//! matched.
+//!
+//! ```
+//! # use approx::*;
+//! # use approx_derive::*;
+//! #[derive(AbsDiffEq, PartialEq, Debug)]
+//! #[approx(match_options)]
+//! struct Car {
+//!     speed: f64,
+//!     id: Option<i32>,
+//! }
+//!
+//! let car1 = Car { speed: 31.0, id: Some(1) };
+//! let car2 = Car { speed: 31.1, id: Some(1) };
+//! let car3 = Car { speed: 31.1, id: Some(2) };
+//!
+//! assert_abs_diff_eq!(car1, car2, epsilon = 0.11);
+//! assert_abs_diff_ne!(car2, car3);
+//! assert_abs_diff_eq!(car2, car3, epsilon = 1.0);
+//! ```
+//!
+//! Note that this will _literally_ match `Option<...>`, meaning if you redefine the Optional type,
+//! or introduce your own variant undefined behaviour can occurr.
+//! The generated code for the example from above follows the following pattern.
+//! ```
+//! # use approx::*;
+//! # struct Car { id: Option<i32> };
+//! # let car1 = Car { id: Some(1) };
+//! # let car2 = Car { id: Some(1) };
+//! # let epsilon = 1f64;
+//! # let res =
+//! match (car1.id, car2.id) {
+//!     (Some(x), Some(y)) => <i32 as AbsDiffEq>::
+//!         abs_diff_eq(&x, &y, epsilon as <i32 as AbsDiffEq>::Epsilon),
+//!     (None, None) => true,
+//!     (None, Some(_)) | (Some(_), None) => false,
+//! }
+//! # ;
 //! ```
 
 mod abs_diff_eq;
