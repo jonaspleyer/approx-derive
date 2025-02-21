@@ -440,3 +440,53 @@ fn derive_abs_diff_equal_enum_nested() {
     approx::assert_abs_diff_eq!(p3, p4, epsilon = 0.2);
     approx::assert_abs_diff_ne!(p3, p4, epsilon = 0.01);
 }
+
+#[test]
+fn match_options_struct() {
+    #[derive(PartialEq, Debug, AbsDiffEq)]
+    #[approx(match_options)]
+    struct Agent {
+        x: f32,
+        id: Option<i32>,
+    }
+
+    let a1 = Agent {
+        x: 1.0,
+        id: Some(1),
+    };
+    let a2 = Agent {
+        x: 1.1,
+        id: Some(1),
+    };
+    let a3 = Agent {
+        x: 1.0,
+        id: Some(2),
+    };
+    approx::assert_abs_diff_eq!(a1, a2, epsilon = 0.11);
+    approx::assert_abs_diff_ne!(a1, a2, epsilon = 0.05);
+    approx::assert_abs_diff_eq!(a2, a3, epsilon = 2.0);
+}
+
+#[test]
+fn match_options_enum() {
+    #[derive(PartialEq, Debug, AbsDiffEq)]
+    #[approx(match_options)]
+    enum Si {
+        V1(f64),
+        V2 { x: f64, id: Option<usize> },
+    }
+    let s1 = Si::V1(1.0);
+    let s2 = Si::V1(0.99999);
+    let s3 = Si::V2 {
+        x: 1746.,
+        id: Some(33),
+    };
+    let s4 = Si::V2 {
+        x: 1756.,
+        id: Some(42),
+    };
+    approx::assert_abs_diff_eq!(s1, s2, epsilon = 0.0001);
+    approx::assert_abs_diff_ne!(s1, s2);
+    approx::assert_abs_diff_eq!(s3, s4, epsilon = 10.0);
+    approx::assert_abs_diff_ne!(s3, s4, epsilon = 5.0);
+}

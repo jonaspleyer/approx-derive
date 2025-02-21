@@ -344,3 +344,53 @@ fn derive_rel_diff_enum3() {
     approx::assert_relative_ne!(s4, s5, max_relative = 10.0);
     approx::assert_relative_ne!(s4, s8, max_relative = 100.0);
 }
+
+#[test]
+fn match_options_struct() {
+    #[derive(PartialEq, Debug, RelativeEq)]
+    #[approx(match_options)]
+    struct Agent {
+        x: f32,
+        id: Option<f64>,
+    }
+
+    let a1 = Agent {
+        x: 1.0,
+        id: Some(1.),
+    };
+    let a2 = Agent {
+        x: 1.1,
+        id: Some(1.),
+    };
+    let a3 = Agent {
+        x: 1.0,
+        id: Some(2.),
+    };
+    approx::assert_relative_eq!(a1, a2, max_relative = 0.11);
+    approx::assert_relative_ne!(a1, a2, max_relative = 0.05);
+    approx::assert_relative_eq!(a2, a3, max_relative = 2.0);
+}
+
+#[test]
+fn match_options_enum() {
+    #[derive(PartialEq, Debug, RelativeEq)]
+    #[approx(match_options)]
+    enum Si {
+        V1(f64),
+        V2 { x: f64, id: Option<f32> },
+    }
+    let s1 = Si::V1(1.0);
+    let s2 = Si::V1(0.99999);
+    let s3 = Si::V2 {
+        x: 1746.,
+        id: Some(33.),
+    };
+    let s4 = Si::V2 {
+        x: 1756.,
+        id: Some(42.),
+    };
+    approx::assert_relative_eq!(s1, s2, max_relative = 0.0001);
+    approx::assert_relative_ne!(s1, s2);
+    approx::assert_relative_eq!(s3, s4, max_relative = 0.33);
+    approx::assert_relative_ne!(s3, s4, max_relative = 0.1);
+}
