@@ -17,6 +17,7 @@
 //! | [`#[approx(skip)]`](#skipping-fields) | Skips the field entirely |
 //! | [`#[approx(equal)]`](#testing-for-equality) | Checks this field with `==` for Equality |
 //! | [`#[approx(cast_field)]`](#casting-fields) | Casts the field with `.. as ..` syntax. |
+//! | [`#[approx(cast_value)]`](#casting-fields) | Casts the epsilon value with `.. as ..` syntax. |
 //! | [`#[approx(map = ..)]`](#mapping-values) | Maps values before comparing them. |
 //! | [`#[approx(static_epsilon = ..)]`](#static-values) | Defines a static epsilon value for this particular field. |
 //! | | |
