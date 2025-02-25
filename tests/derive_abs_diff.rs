@@ -490,3 +490,68 @@ fn match_options_enum() {
     approx::assert_abs_diff_eq!(s3, s4, epsilon = 10.0);
     approx::assert_abs_diff_ne!(s3, s4, epsilon = 5.0);
 }
+
+#[test]
+fn iterator() {
+    #[derive(PartialEq, Debug, AbsDiffEq)]
+    #[approx(epsilon_type = f32)]
+    struct Agent {
+        #[approx(into_iter)]
+        pos: [f32; 2],
+    }
+
+    let a1 = Agent { pos: [0f32; 2] };
+    let a2 = Agent { pos: [1f32; 2] };
+
+    approx::assert_abs_diff_ne!(a1, a2);
+    approx::assert_abs_diff_eq!(a1, a2, epsilon = 1.2);
+}
+
+#[test]
+fn iterator_not_equal_length() {
+    #[derive(PartialEq, Debug, AbsDiffEq)]
+    struct Interaction {
+        strength: f64,
+        #[approx(into_iter)]
+        polynomial_coefficients: Vec<f64>,
+    }
+
+    let i1 = Interaction {
+        strength: 1.0,
+        polynomial_coefficients: vec![0.1, 0.003, 0.234],
+    };
+    let i2 = Interaction {
+        strength: 1.0,
+        polynomial_coefficients: vec![0.1, 0.003],
+    };
+
+    approx::assert_abs_diff_ne!(i1, i2, epsilon = 1000.0);
+    approx::assert_abs_diff_ne!(i1, i2, epsilon = 10_000.0);
+}
+
+#[test]
+fn iterator_enum() {
+    #[derive(PartialEq, Debug, AbsDiffEq)]
+    enum Parameter {
+        Sampled {
+            value: f32,
+            #[approx(into_iter)]
+            bounds: [f32; 2],
+        },
+        Fixed(f32),
+    }
+
+    let p1 = Parameter::Sampled {
+        value: -1.0,
+        bounds: [0.0, 3.0],
+    };
+    let p2 = Parameter::Sampled {
+        value: -0.9,
+        bounds: [-0.1, 2.9],
+    };
+    let p3 = Parameter::Fixed(1.0);
+    approx::assert_abs_diff_eq!(p1, p2, epsilon = 0.11);
+    approx::assert_abs_diff_ne!(p1, p2);
+    approx::assert_abs_diff_ne!(p1, p3);
+    approx::assert_abs_diff_ne!(p2, p3);
+}

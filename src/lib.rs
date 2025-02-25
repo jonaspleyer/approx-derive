@@ -20,6 +20,7 @@
 //! | [`#[approx(cast_value)]`](#casting-fields) | Casts the epsilon value with `.. as ..` syntax. |
 //! | [`#[approx(map = ..)]`](#mapping-values) | Maps values before comparing them. |
 //! | [`#[approx(static_epsilon = ..)]`](#static-values) | Defines a static epsilon value for this particular field. |
+//! | [`#[approx(into_iter)]`](#into-iterator) | Tries to use the `into_iterator` method to compare fields. |
 //! | | |
 //! | **Object Attribute** | |
 //! | [`#[approx(default_epsilon = ...)]`](#default-epsilon) | Sets the default epsilon value |
@@ -482,6 +483,41 @@
 //!     (None, Some(_)) | (Some(_), None) => false,
 //! }
 //! # ;
+//! ```
+//!
+//! # Into Iterator
+//! To compare two fields which consist of a iterable list of values, we can use the
+//! `#[approx(into_iter)]` field attribute.
+//! ```
+//! # use approx::*;
+//! # use approx_derive::*;
+//! #[derive(AbsDiffEq, PartialEq, Debug)]
+//! struct Parameter {
+//!     value: f32,
+//!     #[approx(into_iter)]
+//!     bounds: [f32; 2],
+//! }
+//! let p1 = Parameter { value: 3.144, bounds: [0.0, 10.0] };
+//! let p2 = Parameter { value: 3.145, bounds: [0.1, 10.2] };
+//!
+//! assert_abs_diff_ne!(p1, p2);
+//! assert_abs_diff_eq!(p1, p2, epsilon = 0.21);
+//! ```
+//! It has to be noted that whenever both iterator are not of the same length, that the comparison
+//! will fail.
+//!
+//! ```should_panic
+//! # use approx::*;
+//! # use approx_derive::*;
+//! #[derive(AbsDiffEq, PartialEq, Debug)]
+//! #[approx(epsilon_type = f64)]
+//! struct Polynomial {
+//!     #[approx(into_iter)]
+//!     coefficients: Vec<f64>,
+//! }
+//! let poly1 = Polynomial { coefficients: vec![1.0, 0.5] };
+//! let poly2 = Polynomial { coefficients: vec![1.0, 0.5, 1.0/6.0] };
+//! assert_abs_diff_eq!(poly1, poly2);
 //! ```
 
 mod abs_diff_eq;

@@ -130,4 +130,5 @@ pub struct FieldFormatted {
     pub set_equal: bool,
     // If this is Some type, we should be matching for this type
     pub match_option: Option<proc_macro2::TokenStream>,
+    pub use_iterator: bool,
 }

@@ -18,6 +18,7 @@ impl AbsDiffEqParser {
             set_equal,
             mapping,
             match_option,
+            use_iterator,
         }) = self.format_nth_field(0, field_with_args, Some((xi, yi)))
         {
             if set_equal {
@@ -47,6 +48,28 @@ impl AbsDiffEqParser {
                         _ => false,
                     }
                 ))
+            } else if use_iterator {
+                Some(quote::quote!(({
+                    let mut iter1 = core::iter::IntoIterator::into_iter(*#own_field);
+                    let mut iter2 = core::iter::IntoIterator::into_iter(*#other_field);
+                    let mut res = true;
+                    loop {
+                        match (iter1.next(), iter2.next()) {
+                            (None, None) => break,
+                            (Some(a), Some(b)) => {
+                                if !approx::RelativeEq::relative_eq(a, b, #epsilon, #max_relative) {
+                                    res = false;
+                                    break;
+                                }
+                            },
+                            _ => {
+                                res = false;
+                                break;
+                            }
+                        }
+                    }
+                    res
+                })))
             } else {
                 Some(quote::quote!(
                     <#base_type as approx::RelativeEq>::relative_eq(
@@ -81,6 +104,7 @@ impl AbsDiffEqParser {
                     set_equal,
                     mapping,
                     match_option,
+                    use_iterator,
                 }) = self.format_nth_field(n, field_with_args, None)
                 {
                     if set_equal {
@@ -111,6 +135,33 @@ impl AbsDiffEqParser {
                                 _ => false,
                             } &&
                         ))
+                    } else if use_iterator {
+                        Some(quote::quote!(({
+                            let mut iter1 = core::iter::IntoIterator::into_iter(#own_field);
+                            let mut iter2 = core::iter::IntoIterator::into_iter(#other_field);
+                            let mut res = true;
+                            loop {
+                                match (iter1.next(), iter2.next()) {
+                                    (None, None) => break,
+                                    (Some(a), Some(b)) => {
+                                        if !approx::RelativeEq::relative_eq(
+                                                a,
+                                                b,
+                                                #epsilon,
+                                                #max_relative
+                                            ) {
+                                            res = false;
+                                            break;
+                                        }
+                                    },
+                                    _ => {
+                                        res = false;
+                                        break;
+                                    }
+                                }
+                            }
+                            res
+                        }) &&))
                     } else {
                         Some(quote::quote!(
                             <#base_type as approx::RelativeEq>::relative_eq(
