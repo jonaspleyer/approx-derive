@@ -34,6 +34,7 @@ pub struct FieldArgs {
     pub epsilon_static_value: Option<syn::Expr>,
     pub max_relative_static_value: Option<syn::Expr>,
     pub mapping: Option<syn::Expr>,
+    pub use_iterator: Option<bool>,
 }
 
 impl FieldArgs {
@@ -51,6 +52,7 @@ impl FieldArgs {
                 .clone()
                 .or(other.max_relative_static_value.clone()),
             mapping: self.mapping.clone().or(other.mapping.clone()),
+            use_iterator: self.use_iterator.or(other.use_iterator),
         };
     }
 }
@@ -60,6 +62,7 @@ pub enum FieldValueArg {
     Skip,
     CastStrategy(TypeCast),
     Equal,
+    Iter,
 }
 
 impl FieldValueArg {
@@ -69,6 +72,7 @@ impl FieldValueArg {
             "cast_field" => Ok(FieldValueArg::CastStrategy(TypeCast::CastField)),
             "cast_value" => Ok(FieldValueArg::CastStrategy(TypeCast::CastValue)),
             "equal" => Ok(FieldValueArg::Equal),
+            "into_iter" => Ok(FieldValueArg::Iter),
             _ => Err(syn::Error::new(ident.span(), "Not a valid value.")),
         }
     }
@@ -215,6 +219,7 @@ impl FieldArgs {
         let mut cast_strategy = None;
         let mut epsilon_static_value = None;
         let mut max_relative_static_value = None;
+        let mut iter = None;
         for attribute in attributes.iter() {
             // Only do anything if approx is specified
             if attribute.path().is_ident("approx") {
@@ -225,6 +230,7 @@ impl FieldArgs {
                         cast_strategy = Some(strategy)
                     }
                     FieldArgGeneric::Value(FieldValueArg::Equal) => set_equal = Some(true),
+                    FieldArgGeneric::Value(FieldValueArg::Iter) => iter = Some(true),
                     FieldArgGeneric::KeyValue(FieldKeyValueArg::EpsilonStatic(epsilon_static)) => {
                         epsilon_static_value = epsilon_static;
                     }
@@ -244,6 +250,7 @@ impl FieldArgs {
             epsilon_static_value,
             max_relative_static_value,
             mapping,
+            use_iterator: iter,
         })
     }
 }
