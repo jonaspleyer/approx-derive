@@ -1,8 +1,8 @@
 #![deny(missing_docs)]
 //! This crate provides derive macros for the
-//! [AbsDiffEq](https://docs.rs/approx/latest/approx/trait.AbsDiffEq.html) and
-//! [RelativeEq](https://docs.rs/approx/latest/approx/trait.RelativeEq.html) traits of the
-//! [approx](https://docs.rs/approx/latest/approx/) crate.
+//! [AbsDiffEq](https://docs.rs/approxim/latest/approxim/trait.AbsDiffEq.html) and
+//! [RelativeEq](https://docs.rs/approxim/latest/approxim/trait.RelativeEq.html) traits of the
+//! [approxim](https://docs.rs/approxim/latest/approxim/) crate.
 //!
 //! These derive macros only implement both traits with `...<Rhs = Self>`.
 //! The macros infer the `EPSILON` type of the [AbsDiffEq] trait by looking
