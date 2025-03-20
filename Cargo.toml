@@ -10,6 +10,7 @@ proc-macro = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+proc-macro-crate = "3.3.0"
 proc-macro2 = "1.0.86"
 quote = "1.0.37"
 syn = { version = "2.0.76", features = ["default", "full"] }
@@ -20,4 +21,4 @@ approxim = "0.6"
 
 [features]
 default = []
-approxim = []
+infer_name = []

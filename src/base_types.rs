@@ -4,10 +4,27 @@ pub struct ApproxName;
 
 impl quote::ToTokens for ApproxName {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
-        #[cfg(not(feature = "approxim"))]
-        tokens.extend(quote::quote!(approx));
-        #[cfg(feature = "approxim")]
-        tokens.extend(quote::quote!(approxim));
+        if cfg!(feature = "infer_name") {
+            if std::env::var("CARGO_PKG_NAME").is_ok_and(|x| x == "approx-derive") {
+                tokens.extend(quote::quote!(approxim));
+                return;
+            }
+            let found_name =
+                proc_macro_crate::crate_name("approxim").expect("could-not-find-rename");
+            match found_name {
+                proc_macro_crate::FoundCrate::Itself => quote::quote!(approxim).to_tokens(tokens),
+                proc_macro_crate::FoundCrate::Name(name) => {
+                    let name = match name.as_str() {
+                        "approx-derive" => "approx",
+                        other => other,
+                    };
+                    println!("{name}");
+                    quote::format_ident!("{name}").to_tokens(tokens)
+                }
+            };
+        } else {
+            tokens.extend(quote::quote!(approx));
+        }
     }
 }
 

@@ -1,4 +1,4 @@
-#[cfg(feature = "approxim")]
+#[cfg(feature = "infer_name")]
 use approxim as approx;
 
 use approx_derive::*;
