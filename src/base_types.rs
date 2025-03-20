@@ -18,7 +18,6 @@ impl quote::ToTokens for ApproxName {
                         "approx-derive" => "approx",
                         other => other,
                     };
-                    println!("{name}");
                     quote::format_ident!("{name}").to_tokens(tokens)
                 }
             };
