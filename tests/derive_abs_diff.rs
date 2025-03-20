@@ -1,3 +1,6 @@
+#[cfg(feature = "approxim")]
+use approxim as approx;
+
 use approx_derive::*;
 
 #[test]

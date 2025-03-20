@@ -1,4 +1,6 @@
 use approx_derive::*;
+#[cfg(feature = "approxim")]
+use approxim as approx;
 
 #[test]
 fn derive_rel_diff_eq() {

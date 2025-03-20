@@ -30,7 +30,8 @@
 //! # Usage
 //!
 //! ```
-//! # use approx::*;
+//! # #[cfg(not(feature = "approxim"))] use approx::*;
+//! # #[cfg(feature = "approxim")] use approxim::*;
 //! use approx_derive::AbsDiffEq;
 //!
 //! // Define a new type and derive the AbsDiffEq trait
@@ -80,7 +81,8 @@
 //! Since `approx-derive` supports enums since `0.2`
 //!
 //! ```
-//! # use approx::*;
+//! # #[cfg(not(feature = "approxim"))] use approx::*;
+//! # #[cfg(feature = "approxim")] use approxim::*;
 //! use approx_derive::AbsDiffEq;
 //!
 //! #[derive(AbsDiffEq, PartialEq, Debug)]
@@ -98,7 +100,8 @@
 //! ```
 //!
 //! ```should_panic
-//! # use approx::*;
+//! # #[cfg(not(feature = "approxim"))] use approx::*;
+//! # #[cfg(feature = "approxim")] use approxim::*;
 //! # use approx_derive::AbsDiffEq;
 //! # #[derive(AbsDiffEq, PartialEq, Debug)]
 //! # enum Position {
@@ -118,7 +121,8 @@
 //!
 //! Sometimes, we only want to compare certain fields and omit others completely.
 //! ```
-//! # use approx::*;
+//! # #[cfg(not(feature = "approxim"))] use approx::*;
+//! # #[cfg(feature = "approxim")] use approxim::*;
 //! # use approx_derive::*;
 //! #[derive(AbsDiffEq, PartialEq, Debug)]
 //! struct Player {
@@ -151,7 +155,7 @@
 //! When identical equality is desired, we can specify this with the `#[approx(equal)]` attribute.
 //!
 //! ```
-//! # use approx::*;
+//! # #[cfg(not(feature = "approxim"))] use approx::*;
 //! # use approx_derive::*;
 //! #[derive(AbsDiffEq, PartialEq, Debug)]
 //! struct Prediction {
@@ -184,7 +188,8 @@
 //! After all, we should specify how this type mismatch will be handled.
 //!
 //! ```compile_fail
-//! # use approx::*;
+//! # #[cfg(not(feature = "approxim"))] use approx::*;
+//! # #[cfg(feature = "approxim")] use approxim::*;
 //! # use approx_derive::*;
 //! #[derive(AbsDiffEq, PartialEq, Debug)]
 //! struct MyStruct {
@@ -201,7 +206,8 @@
 //! We can check this by testing if a change in the size of `f64::MIN_POSITIVE` would get lost by
 //! this procedure.
 //! ```
-//! # use approx::*;
+//! # #[cfg(not(feature = "approxim"))] use approx::*;
+//! # #[cfg(feature = "approxim")] use approxim::*;
 //! # use approx_derive::*;
 //! # #[derive(RelativeEq, PartialEq, Debug)]
 //! # struct MyStruct {
@@ -223,7 +229,8 @@
 //! ### Example 2
 //! In this example, we cast the `f64` type to `isize`.
 //! ```
-//! # use approx::*;
+//! # #[cfg(not(feature = "approxim"))] use approx::*;
+//! # #[cfg(feature = "approxim")] use approxim::*;
 //! # use approx_derive::*;
 //! #[derive(AbsDiffEq, PartialEq, Debug)]
 //! struct MyStruct {
@@ -244,7 +251,8 @@
 //! ```
 //! When we use the `#[approx(cast_value)]` syntax, we get a different result.
 //! ```
-//! # use approx::*;
+//! # #[cfg(not(feature = "approxim"))] use approx::*;
+//! # #[cfg(feature = "approxim")] use approxim::*;
 //! # use approx_derive::*;
 //! #[derive(AbsDiffEq, PartialEq, Debug)]
 //! struct MyStruct2 {
@@ -273,7 +281,8 @@
 //! return a `None` value.
 //! ```
 //! # use approx_derive::*;
-//! # use approx::*;
+//! # #[cfg(not(feature = "approxim"))] use approx::*;
+//! # #[cfg(feature = "approxim")] use approxim::*;
 //! #[derive(AbsDiffEq, PartialEq, Debug)]
 //! struct Tower {
 //!     height_in_meters: f32,
@@ -293,8 +302,9 @@
 //!
 //! This functionality can also be useful when having more complex datatypes.
 //! ```
+//! # #[cfg(not(feature = "approxim"))] use approx::*;
+//! # #[cfg(feature = "approxim")] use approxim::*;
 //! # use approx_derive::*;
-//! # use approx::*;
 //! #[derive(PartialEq, Debug)]
 //! enum Time {
 //!     Years(u16),
@@ -325,7 +335,8 @@
 //! ## Static Values
 //! We can force a static `EPSILON` or `max_relative` value for individual fields.
 //! ```
-//! # use approx::*;
+//! # #[cfg(not(feature = "approxim"))] use approx::*;
+//! # #[cfg(feature = "approxim")] use approxim::*;
 //! # use approx_derive::*;
 //! #[derive(AbsDiffEq, PartialEq, Debug)]
 //! struct Rectangle {
@@ -363,8 +374,9 @@
 //! We can control this value by specifying it on an object level.
 //!
 //! ```
+//! # #[cfg(not(feature = "approxim"))] use approx::*;
+//! # #[cfg(feature = "approxim")] use approxim::*;
 //! # use approx_derive::*;
-//! # use approx::*;
 //! #[derive(AbsDiffEq, PartialEq, Debug)]
 //! #[approx(default_epsilon = 10)]
 //! struct Benchmark {
@@ -391,7 +403,8 @@
 //! Similarly to [Default Epsilon], we can also choose a default max_relative devaition.
 //! ```
 //! # use approx_derive::*;
-//! # use approx::*;
+//! # #[cfg(not(feature = "approxim"))] use approx::*;
+//! # #[cfg(feature = "approxim")] use approxim::*;
 //! #[derive(RelativeEq, PartialEq, Debug)]
 //! #[approx(default_max_relative = 0.1)]
 //! struct Benchmark {
@@ -418,8 +431,9 @@
 //! type.
 //!
 //! ```
+//! # #[cfg(not(feature = "approxim"))] use approx::*;
+//! # #[cfg(feature = "approxim")] use approxim::*;
 //! # use approx_derive::*;
-//! # use approx::*;
 //! #[derive(RelativeEq, PartialEq, Debug)]
 //! #[approx(epsilon_type = f32)]
 //! struct Car {
@@ -446,7 +460,8 @@
 //! `#[approx(into_iter)]` field attribute.
 //!
 //! ```
-//! # use approx::*;
+//! # #[cfg(not(feature = "approxim"))] use approx::*;
+//! # #[cfg(feature = "approxim")] use approxim::*;
 //! # use approx_derive::*;
 //! #[derive(AbsDiffEq, PartialEq, Debug)]
 //! struct Parameter {
@@ -464,7 +479,8 @@
 //! will fail.
 //!
 //! ```should_panic
-//! # use approx::*;
+//! # #[cfg(not(feature = "approxim"))] use approx::*;
+//! # #[cfg(feature = "approxim")] use approxim::*;
 //! # use approx_derive::*;
 //! #[derive(AbsDiffEq, PartialEq, Debug)]
 //! #[approx(epsilon_type = f64)]
