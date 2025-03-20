@@ -28,7 +28,7 @@ impl AbsDiffEqParser {
                         (#map)(#own_field),
                         (#map)(#other_field)
                     ) {
-                        approx::RelativeEq::relative_eq(&a, &b, #epsilon, #max_relative)
+                        #ApproxName::RelativeEq::relative_eq(&a, &b, #epsilon, #max_relative)
                     } else {
                         false
                     })
@@ -42,7 +42,7 @@ impl AbsDiffEqParser {
                         match (iter1.next(), iter2.next()) {
                             (None, None) => break,
                             (Some(a), Some(b)) => {
-                                if !approx::RelativeEq::relative_eq(a, b, #epsilon, #max_relative) {
+                                if !#ApproxName::RelativeEq::relative_eq(a, b, #epsilon, #max_relative) {
                                     res = false;
                                     break;
                                 }
@@ -57,7 +57,7 @@ impl AbsDiffEqParser {
                 })))
             } else {
                 Some(quote::quote!(
-                    <#base_type as approx::RelativeEq>::relative_eq(
+                    <#base_type as #ApproxName::RelativeEq>::relative_eq(
                         #own_field,
                         #other_field,
                         #epsilon,
@@ -99,7 +99,7 @@ impl AbsDiffEqParser {
                                 (#map)(#own_field),
                                 (#map)(#other_field)
                             ) {
-                                approx::RelativeEq::relative_eq(&a, &b, #epsilon, #max_relative)
+                                #ApproxName::RelativeEq::relative_eq(&a, &b, #epsilon, #max_relative)
                             } else {
                                 false
                             }) &&
@@ -113,7 +113,7 @@ impl AbsDiffEqParser {
                                 match (iter1.next(), iter2.next()) {
                                     (None, None) => break,
                                     (Some(a), Some(b)) => {
-                                        if !approx::RelativeEq::relative_eq(
+                                        if !#ApproxName::RelativeEq::relative_eq(
                                                 a,
                                                 b,
                                                 #epsilon,
@@ -133,7 +133,7 @@ impl AbsDiffEqParser {
                         }) &&))
                     } else {
                         Some(quote::quote!(
-                            <#base_type as approx::RelativeEq>::relative_eq(
+                            <#base_type as #ApproxName::RelativeEq>::relative_eq(
                                 #own_field,
                                 #other_field,
                                 #epsilon,
@@ -248,7 +248,7 @@ impl AbsDiffEqParser {
                 quote::quote!(
                     const _ : () = {
                         #[automatically_derived]
-                        impl #impl_generics approx::RelativeEq for #obj_name #ty_generics
+                        impl #impl_generics #ApproxName::RelativeEq for #obj_name #ty_generics
                         #where_clause
                         {
                             fn default_max_relative() -> Self::Epsilon {
@@ -277,7 +277,7 @@ impl AbsDiffEqParser {
                 quote::quote!(
                     const _: () = {
                         #[automatically_derived]
-                        impl #impl_generics approx::RelativeEq for #obj_name #ty_generics
+                        impl #impl_generics #ApproxName::RelativeEq for #obj_name #ty_generics
                         #where_clause
                         {
                             fn default_max_relative() -> Self::Epsilon {

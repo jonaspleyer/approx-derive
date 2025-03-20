@@ -1,5 +1,5 @@
 use crate::args_parsing::*;
-use crate::base_types::{BaseType, FieldFormatted};
+use crate::base_types::{ApproxName, BaseType, FieldFormatted};
 use crate::AbsDiffEqParser;
 
 impl syn::parse::Parse for AbsDiffEqParser {
@@ -47,7 +47,7 @@ impl AbsDiffEqParser {
 
     pub fn get_derived_epsilon_type(&self) -> proc_macro2::TokenStream {
         let parent = self.get_epsilon_parent_type();
-        quote::quote!(<#parent as approx::AbsDiffEq>::Epsilon)
+        quote::quote!(<#parent as #ApproxName::AbsDiffEq>::Epsilon)
     }
 
     pub fn get_epsilon_type_and_default_value(
@@ -60,7 +60,7 @@ impl AbsDiffEqParser {
             .default_epsilon_value
             .clone()
             .map(|x| quote::quote!(#x))
-            .or_else(|| Some(quote::quote!(<#parent as approx::AbsDiffEq>::default_epsilon())))
+            .or_else(|| Some(quote::quote!(<#parent as #ApproxName::AbsDiffEq>::default_epsilon())))
             .unwrap();
         (epsilon_type, epsilon_default_value)
     }
@@ -81,7 +81,7 @@ impl AbsDiffEqParser {
             .clone()
             .map(|x| quote::quote!(#x))
             .or_else(|| {
-                Some(quote::quote!(<#epsilon_type as approx::RelativeEq>::default_max_relative()))
+                Some(quote::quote!(<#epsilon_type as #ApproxName::RelativeEq>::default_max_relative()))
             })
             .unwrap()
     }
@@ -207,7 +207,7 @@ impl AbsDiffEqParser {
                                 (#map)(#own_field),
                                 (#map)(#other_field)
                             ) {
-                                approx::AbsDiffEq::abs_diff_eq(&a, &b, #epsilon)
+                                #ApproxName::AbsDiffEq::abs_diff_eq(&a, &b, #epsilon)
                             } else {
                                 false
                             }) &&
@@ -221,7 +221,7 @@ impl AbsDiffEqParser {
                                 match (iter1.next(), iter2.next()) {
                                     (None, None) => break,
                                     (Some(a), Some(b)) => {
-                                        if !approx::AbsDiffEq::abs_diff_eq(a, b, #epsilon) {
+                                        if !#ApproxName::AbsDiffEq::abs_diff_eq(a, b, #epsilon) {
                                             res = false;
                                             break;
                                         }
@@ -236,7 +236,7 @@ impl AbsDiffEqParser {
                         }) &&))
                     } else {
                         Some(quote::quote!(
-                            <#base_type as approx::AbsDiffEq>::abs_diff_eq(
+                            <#base_type as #ApproxName::AbsDiffEq>::abs_diff_eq(
                                 #own_field,
                                 #other_field,
                                 #epsilon
@@ -358,7 +358,7 @@ impl AbsDiffEqParser {
                         (#map)(#own_field),
                         (#map)(#other_field)
                     ) {
-                        <#base_type as approx::AbsDiffEq>::abs_diff_eq(&a, &b, #epsilon)
+                        <#base_type as #ApproxName::AbsDiffEq>::abs_diff_eq(&a, &b, #epsilon)
                     } else {
                         false
                     })
@@ -372,7 +372,7 @@ impl AbsDiffEqParser {
                         match (iter1.next(), iter2.next()) {
                             (None, None) => break,
                             (Some(a), Some(b)) => {
-                                if !approx::AbsDiffEq::abs_diff_eq(a, b, #epsilon) {
+                                if !#ApproxName::AbsDiffEq::abs_diff_eq(a, b, #epsilon) {
                                     res = false;
                                     break;
                                 }
@@ -387,7 +387,7 @@ impl AbsDiffEqParser {
                 }))
             } else {
                 Some(quote::quote!(
-                    <#base_type as approx::AbsDiffEq>::abs_diff_eq(
+                    <#base_type as #ApproxName::AbsDiffEq>::abs_diff_eq(
                         &#own_field,
                         &#other_field,
                         #epsilon
@@ -403,8 +403,8 @@ impl AbsDiffEqParser {
         let (epsilon_type, _) = self.get_epsilon_type_and_default_value();
         let (_, _, where_clause) = self.base_type.generics().split_for_impl();
         let trait_bound = match abs_diff_eq {
-            true => quote::quote!(approx::AbsDiffEq),
-            false => quote::quote!(approx::RelativeEq),
+            true => quote::quote!(#ApproxName::AbsDiffEq),
+            false => quote::quote!(#ApproxName::RelativeEq),
         };
         if self.generics_involved() {
             let parent = self.get_epsilon_parent_type();
@@ -445,7 +445,7 @@ impl AbsDiffEqParser {
                 quote::quote!(
                     const _ : () = {
                         #[automatically_derived]
-                        impl #impl_generics approx::AbsDiffEq for #struct_name #ty_generics
+                        impl #impl_generics #ApproxName::AbsDiffEq for #struct_name #ty_generics
                         #where_clause
                         {
                             type Epsilon = #epsilon_type;
@@ -471,7 +471,7 @@ impl AbsDiffEqParser {
                 quote::quote!(
                     const _: () = {
                         #[automatically_derived]
-                        impl #impl_generics approx::AbsDiffEq for #struct_name #ty_generics
+                        impl #impl_generics #ApproxName::AbsDiffEq for #struct_name #ty_generics
                         #where_clause
                         {
                             type Epsilon = #epsilon_type;

@@ -1,5 +1,16 @@
 use crate::args_parsing::*;
 
+pub struct ApproxName;
+
+impl quote::ToTokens for ApproxName {
+    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+        #[cfg(not(feature = "approxim"))]
+        tokens.extend(quote::quote!(approx));
+        #[cfg(feature = "approxim")]
+        tokens.extend(quote::quote!(approxim));
+    }
+}
+
 pub enum BaseType {
     Struct {
         item_struct: syn::ItemStruct,
