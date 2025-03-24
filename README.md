@@ -2,6 +2,7 @@
 [![Test](https://img.shields.io/github/actions/workflow/status/jonaspleyer/approx-derive/test.yml?label=Test&style=flat-square)](https://github.com/jonaspleyer/approx-derive/actions)
 [![Crate](https://img.shields.io/crates/v/approx-derive.svg?style=flat-square)](https://crates.io/crates/approx-derive)
 ![Crates.io Total Downloads](https://img.shields.io/crates/d/approx-derive?style=flat-square)
+![Codecov](https://img.shields.io/codecov/c/github/jonaspleyer/approx-derive?style=flat-square)
 
 # approx_derive
 
