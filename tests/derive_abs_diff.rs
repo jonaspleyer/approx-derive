@@ -508,3 +508,27 @@ fn iterator_enum() {
     approx::assert_abs_diff_ne!(p1, p3);
     approx::assert_abs_diff_ne!(p2, p3);
 }
+
+#[cfg(feature = "infer_name")]
+#[test]
+fn epsilon_mapping() {
+    #[derive(Clone, PartialEq, Debug, AbsDiffEq)]
+    #[approx(epsilon_type = f32)]
+    struct A {
+        a: f32,
+        #[approx(epsilon_map = |x| (x as usize, x))]
+        b: (usize, f32),
+    }
+
+    let a1 = A {
+        a: 0.0,
+        b: (1, 3.0),
+    };
+    let a2 = A {
+        a: 0.1,
+        b: (2, 3.1),
+    };
+
+    approx::assert_abs_diff_ne!(a1, a2);
+    approx::assert_abs_diff_eq!(a1, a2, epsilon = 1.1);
+}
