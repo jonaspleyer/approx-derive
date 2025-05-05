@@ -411,3 +411,27 @@ fn iterator_enum() {
     approx::assert_relative_ne!(p1, p3);
     approx::assert_relative_ne!(p2, p3);
 }
+
+#[cfg(feature = "infer_name")]
+#[test]
+fn epsilon_mapping() {
+    #[derive(Clone, PartialEq, Debug, RelativeEq)]
+    #[approx(epsilon_type = f32)]
+    struct A {
+        a: f32,
+        #[approx(epsilon_map = |x| (x as f64, x))]
+        #[approx(max_relative_map = |x| (x as f64, x))]
+        #[approx(map = |(x, y): &(usize, f32)| Some((*x as f64, *y)))]
+        b: (usize, f32),
+    }
+
+    let a1 = A {
+        a: 1.0,
+        b: (1, 1.0),
+    };
+    let a2 = A {
+        a: 1.1,
+        b: (2, 0.9),
+    };
+    approx::assert_relative_ne!(a1, a2);
+}
