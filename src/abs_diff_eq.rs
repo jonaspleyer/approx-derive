@@ -135,7 +135,7 @@ impl AbsDiffEqParser {
             .unwrap();
 
         // Use the casting strategy
-        let (base_type, own_field, other_field, epsilon, max_relative) = match cast_strategy {
+        let (base_type, own_field, other_field, mut epsilon, max_relative) = match cast_strategy {
             Some(TypeCast::CastField) => (
                 quote::quote!(#parent_type),
                 quote::quote!(&(#field_name1.clone() as #parent_type)),
@@ -157,6 +157,9 @@ impl AbsDiffEqParser {
                 quote::quote!(#epsilon.clone()),
                 quote::quote!(#max_relative.clone()),
             ),
+        };
+        if let Some(eps_map) = &field_with_args.args.epsilon_mapping {
+            epsilon = quote::quote!((#eps_map)(epsilon));
         };
 
         let mapping = field_with_args

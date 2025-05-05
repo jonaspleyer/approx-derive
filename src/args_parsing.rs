@@ -34,6 +34,7 @@ pub struct FieldArgs {
     pub epsilon_static_value: Option<syn::Expr>,
     pub max_relative_static_value: Option<syn::Expr>,
     pub mapping: Option<syn::Expr>,
+    pub epsilon_mapping: Option<syn::Expr>,
     pub use_iterator: Option<bool>,
 }
 
@@ -52,6 +53,10 @@ impl FieldArgs {
                 .clone()
                 .or(other.max_relative_static_value.clone()),
             mapping: self.mapping.clone().or(other.mapping.clone()),
+            epsilon_mapping: self
+                .epsilon_mapping
+                .clone()
+                .or(other.epsilon_mapping.clone()),
             use_iterator: self.use_iterator.or(other.use_iterator),
         };
     }
@@ -83,6 +88,7 @@ pub enum FieldKeyValueArg {
     EpsilonStatic(Option<syn::Expr>),
     MaxRelativeStatic(Option<syn::Expr>),
     Mapping(Option<syn::Expr>),
+    EpsilonMapping(Option<syn::Expr>),
 }
 
 impl FieldKeyValueArg {
@@ -91,6 +97,7 @@ impl FieldKeyValueArg {
             "static_epsilon" => Ok(Self::EpsilonStatic(Some(input.parse()?))),
             "static_max_relative" => Ok(Self::MaxRelativeStatic(Some(input.parse()?))),
             "map" => Ok(Self::Mapping(Some(input.parse()?))),
+            "epsilon_map" => Ok(Self::EpsilonMapping(Some(input.parse()?))),
             _ => Err(syn::Error::new(keyword.span(), "Not a valid keyword")),
         }
     }
@@ -216,6 +223,7 @@ impl FieldArgs {
         let mut skip = None;
         let mut set_equal = None;
         let mut mapping = None;
+        let mut epsilon_mapping = None;
         let mut cast_strategy = None;
         let mut epsilon_static_value = None;
         let mut max_relative_static_value = None;
@@ -240,6 +248,9 @@ impl FieldArgs {
                         max_relative_static_value = max_rel_static;
                     }
                     FieldArgGeneric::KeyValue(FieldKeyValueArg::Mapping(expr)) => mapping = expr,
+                    FieldArgGeneric::KeyValue(FieldKeyValueArg::EpsilonMapping(expr)) => {
+                        epsilon_mapping = expr
+                    }
                 }
             }
         }
@@ -250,6 +261,7 @@ impl FieldArgs {
             epsilon_static_value,
             max_relative_static_value,
             mapping,
+            epsilon_mapping,
             use_iterator: iter,
         })
     }
