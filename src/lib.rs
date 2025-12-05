@@ -19,6 +19,7 @@
 //! | [`#[approx(cast_field)]`](#casting-fields) | Casts the field with `.. as ..` syntax. |
 //! | [`#[approx(cast_value)]`](#casting-fields) | Casts the epsilon value with `.. as ..` syntax. |
 //! | [`#[approx(map = ..)]`](#mapping-values) | Maps values before comparing them. |
+//! | [`#[approx(epsilon_map = ..)]`](#mapping-epsilon-values) | Maps epsilon values before using them. |
 //! | [`#[approx(static_epsilon = ..)]`](#static-values) | Defines a static epsilon value for this particular field. |
 //! | [`#[approx(into_iter)]`](#into-iterator) | Tries to use the `into_iterator` method to compare fields. |
 //! | | |
@@ -330,6 +331,36 @@
 //!     #[approx(map = time_to_days)]
 //!     next_doctors_appointment: Time,
 //! }
+//! ```
+//!
+//! ## Mapping Epsilon Values
+//!
+//! We can also map `epsilon` values before using them. This is usefull i.e. for tuples or arrays.
+//! Note that the example below currently requires the
+//! [approxim](https://docs.rs/approxim/latest/approxim/) crate with the `infer_name` feature flag
+//! enabled since [approx](https://docs.rs/approx/latest/approx/) does not support tuples yet.
+//!
+//! ```
+//! # #[cfg(feature = "infer_name")] {
+//! # #[cfg(not(feature = "infer_name"))] use approx::*;
+//! # #[cfg(feature = "infer_name")] use approxim::*;
+//! # use approx_derive::*;
+//! #[derive(AbsDiffEq, PartialEq, Debug)]
+//! struct DifferentialEvolution {
+//!     recombination: f32,
+//!     #[approx(epsilon_map = |x| (x, x))]
+//!     mutation: (f32, f32),
+//! }
+//! # let d1 = DifferentialEvolution {
+//! #   recombination: 0.7,
+//! #   mutation: (0.5, 1.5),
+//! # };
+//! # let d2 = DifferentialEvolution {
+//! #   recombination: 0.7001,
+//! #   mutation: (0.501, 1.499),
+//! # };
+//! # assert_abs_diff_eq!(d1, d2, epsilon = 0.02);
+//! # };
 //! ```
 //!
 //! ## Static Values
