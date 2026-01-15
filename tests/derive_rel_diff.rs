@@ -225,6 +225,28 @@ fn derive_relative_mapping() {
 }
 
 #[test]
+fn derive_relative_mapping_enum() {
+    #[derive(RelativeEq, PartialEq, Debug)]
+    enum Pet {
+        Cat {
+            weight: f32,
+            #[approx(map = |_| {Some(&0f32)})]
+            birthday: String,
+        },
+    }
+
+    let c1 = Pet::Cat {
+        weight: 5.3,
+        birthday: "19th of April 2022".into(),
+    };
+    let c2 = Pet::Cat {
+        weight: 5.3,
+        birthday: "19/04/2022".into(),
+    };
+    approx::assert_relative_eq!(c1, c2);
+}
+
+#[test]
 fn derive_relative_mapping_function() {
     #[derive(PartialEq, Debug)]
     enum Time {

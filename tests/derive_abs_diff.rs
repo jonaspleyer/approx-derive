@@ -260,6 +260,28 @@ fn derive_abs_diff_mapping() {
 }
 
 #[test]
+fn derive_abs_diff_mapping_enum() {
+    #[derive(AbsDiffEq, PartialEq, Debug)]
+    enum Pet {
+        Cat {
+            weight: f32,
+            #[approx(map = |_| {Some(&0f32)})]
+            birthday: String,
+        },
+    }
+
+    let c1 = Pet::Cat {
+        weight: 5.3,
+        birthday: "19th of April 2022".into(),
+    };
+    let c2 = Pet::Cat {
+        weight: 5.3,
+        birthday: "19/04/2022".into(),
+    };
+    approx::assert_abs_diff_eq!(c1, c2);
+}
+
+#[test]
 fn derive_abs_diff_mapping_function() {
     #[derive(PartialEq, Debug)]
     enum Time {
