@@ -365,7 +365,7 @@ impl AbsDiffEqParser {
                         (#map)(#own_field),
                         (#map)(#other_field)
                     ) {
-                        <#base_type as #ApproxName::AbsDiffEq>::abs_diff_eq(&a, &b, #epsilon)
+                        #ApproxName::AbsDiffEq::abs_diff_eq(&a, &b, #epsilon)
                     } else {
                         false
                     })
