@@ -101,7 +101,7 @@ impl AbsDiffEqParser {
         let parent_type = self.get_epsilon_parent_type();
 
         // Save field name and type in variables for easy access
-        use std::str::FromStr;
+        use core::str::FromStr;
         let (field_name1, field_name2) = match (&field_with_args.ident, idents) {
             (Some(id), None) => (quote::quote!(self.#id), quote::quote!(other.#id)),
             (None, None) => {
