@@ -1,8 +1,8 @@
 #![deny(missing_docs)]
 //! This crate provides derive macros for the
-//! [AbsDiffEq](https://docs.rs/approxim/latest/approxim/trait.AbsDiffEq.html) and
-//! [RelativeEq](https://docs.rs/approxim/latest/approxim/trait.RelativeEq.html) traits of the
-//! [approxim](https://docs.rs/approxim/latest/approxim/) crate.
+//! [AbsDiffEq](https://docs.rs/approx/latest/approx/trait.AbsDiffEq.html) and
+//! [RelativeEq](https://docs.rs/approx/latest/approx/trait.RelativeEq.html) traits of the
+//! [approx](https://docs.rs/approx/latest/approx/) crate.
 //!
 //! These derive macros only implement both traits with `...<Rhs = Self>`.
 //! The macros infer the `EPSILON` type of the [AbsDiffEq] trait by looking
@@ -31,8 +31,7 @@
 //! # Usage
 //!
 //! ```
-//! # #[cfg(not(feature = "infer_name"))] use approx::*;
-//! # #[cfg(feature = "infer_name")] use approxim::*;
+//! # use approx::*;
 //! use approx_derive::AbsDiffEq;
 //!
 //! // Define a new type and derive the AbsDiffEq trait
@@ -82,8 +81,7 @@
 //! Since `approx-derive` supports enums since `0.2`
 //!
 //! ```
-//! # #[cfg(not(feature = "infer_name"))] use approx::*;
-//! # #[cfg(feature = "infer_name")] use approxim::*;
+//! # use approx::*;
 //! use approx_derive::AbsDiffEq;
 //!
 //! #[derive(AbsDiffEq, PartialEq, Debug)]
@@ -101,8 +99,7 @@
 //! ```
 //!
 //! ```should_panic
-//! # #[cfg(not(feature = "infer_name"))] use approx::*;
-//! # #[cfg(feature = "infer_name")] use approxim::*;
+//! # use approx::*;
 //! # use approx_derive::AbsDiffEq;
 //! # #[derive(AbsDiffEq, PartialEq, Debug)]
 //! # enum Position {
@@ -122,8 +119,7 @@
 //!
 //! Sometimes, we only want to compare certain fields and omit others completely.
 //! ```
-//! # #[cfg(not(feature = "infer_name"))] use approx::*;
-//! # #[cfg(feature = "infer_name")] use approxim::*;
+//! # use approx::*;
 //! # use approx_derive::*;
 //! #[derive(AbsDiffEq, PartialEq, Debug)]
 //! struct Player {
@@ -156,7 +152,7 @@
 //! When identical equality is desired, we can specify this with the `#[approx(equal)]` attribute.
 //!
 //! ```
-//! # #[cfg(not(feature = "infer_name"))] use approx::*;
+//! # use approx::*;
 //! # use approx_derive::*;
 //! #[derive(AbsDiffEq, PartialEq, Debug)]
 //! struct Prediction {
@@ -189,8 +185,7 @@
 //! After all, we should specify how this type mismatch will be handled.
 //!
 //! ```compile_fail
-//! # #[cfg(not(feature = "infer_name"))] use approx::*;
-//! # #[cfg(feature = "infer_name")] use approxim::*;
+//! # use approx::*;
 //! # use approx_derive::*;
 //! #[derive(AbsDiffEq, PartialEq, Debug)]
 //! struct MyStruct {
@@ -207,8 +202,7 @@
 //! We can check this by testing if a change in the size of `f64::MIN_POSITIVE` would get lost by
 //! this procedure.
 //! ```
-//! # #[cfg(not(feature = "infer_name"))] use approx::*;
-//! # #[cfg(feature = "infer_name")] use approxim::*;
+//! # use approx::*;
 //! # use approx_derive::*;
 //! # #[derive(RelativeEq, PartialEq, Debug)]
 //! # struct MyStruct {
@@ -230,8 +224,7 @@
 //! ### Example 2
 //! In this example, we cast the `f64` type to `isize`.
 //! ```
-//! # #[cfg(not(feature = "infer_name"))] use approx::*;
-//! # #[cfg(feature = "infer_name")] use approxim::*;
+//! # use approx::*;
 //! # use approx_derive::*;
 //! #[derive(AbsDiffEq, PartialEq, Debug)]
 //! struct MyStruct {
@@ -252,8 +245,7 @@
 //! ```
 //! When we use the `#[approx(cast_value)]` syntax, we get a different result.
 //! ```
-//! # #[cfg(not(feature = "infer_name"))] use approx::*;
-//! # #[cfg(feature = "infer_name")] use approxim::*;
+//! # use approx::*;
 //! # use approx_derive::*;
 //! #[derive(AbsDiffEq, PartialEq, Debug)]
 //! struct MyStruct2 {
@@ -282,8 +274,7 @@
 //! return a `None` value.
 //! ```
 //! # use approx_derive::*;
-//! # #[cfg(not(feature = "infer_name"))] use approx::*;
-//! # #[cfg(feature = "infer_name")] use approxim::*;
+//! # use approx::*;
 //! #[derive(AbsDiffEq, PartialEq, Debug)]
 //! struct Tower {
 //!     height_in_meters: f32,
@@ -303,8 +294,7 @@
 //!
 //! This functionality can also be useful when having more complex datatypes.
 //! ```
-//! # #[cfg(not(feature = "infer_name"))] use approx::*;
-//! # #[cfg(feature = "infer_name")] use approxim::*;
+//! # use approx::*;
 //! # use approx_derive::*;
 //! #[derive(PartialEq, Debug)]
 //! enum Time {
@@ -336,14 +326,9 @@
 //! ## Mapping Epsilon Values
 //!
 //! We can also map `epsilon` values before using them. This is usefull i.e. for tuples or arrays.
-//! Note that the example below currently requires the
-//! [approxim](https://docs.rs/approxim/latest/approxim/) crate with the `infer_name` feature flag
-//! enabled since [approx](https://docs.rs/approx/latest/approx/) does not support tuples yet.
 //!
 //! ```
-//! # #[cfg(feature = "infer_name")] {
-//! # #[cfg(not(feature = "infer_name"))] use approx::*;
-//! # #[cfg(feature = "infer_name")] use approxim::*;
+//! # use approx::*;
 //! # use approx_derive::*;
 //! #[derive(AbsDiffEq, PartialEq, Debug)]
 //! struct DifferentialEvolution {
@@ -360,14 +345,12 @@
 //! #   mutation: (0.501, 1.499),
 //! # };
 //! # assert_abs_diff_eq!(d1, d2, epsilon = 0.02);
-//! # };
 //! ```
 //!
 //! ## Static Values
 //! We can force a static `EPSILON` or `max_relative` value for individual fields.
 //! ```
-//! # #[cfg(not(feature = "infer_name"))] use approx::*;
-//! # #[cfg(feature = "infer_name")] use approxim::*;
+//! # use approx::*;
 //! # use approx_derive::*;
 //! #[derive(AbsDiffEq, PartialEq, Debug)]
 //! struct Rectangle {
@@ -405,8 +388,7 @@
 //! We can control this value by specifying it on an object level.
 //!
 //! ```
-//! # #[cfg(not(feature = "infer_name"))] use approx::*;
-//! # #[cfg(feature = "infer_name")] use approxim::*;
+//! # use approx::*;
 //! # use approx_derive::*;
 //! #[derive(AbsDiffEq, PartialEq, Debug)]
 //! #[approx(default_epsilon = 10)]
@@ -434,8 +416,7 @@
 //! Similarly to [Default Epsilon], we can also choose a default max_relative devaition.
 //! ```
 //! # use approx_derive::*;
-//! # #[cfg(not(feature = "infer_name"))] use approx::*;
-//! # #[cfg(feature = "infer_name")] use approxim::*;
+//! # use approx::*;
 //! #[derive(RelativeEq, PartialEq, Debug)]
 //! #[approx(default_max_relative = 0.1)]
 //! struct Benchmark {
@@ -462,8 +443,7 @@
 //! type.
 //!
 //! ```
-//! # #[cfg(not(feature = "infer_name"))] use approx::*;
-//! # #[cfg(feature = "infer_name")] use approxim::*;
+//! # use approx::*;
 //! # use approx_derive::*;
 //! #[derive(RelativeEq, PartialEq, Debug)]
 //! #[approx(epsilon_type = f32)]
@@ -491,8 +471,7 @@
 //! `#[approx(into_iter)]` field attribute.
 //!
 //! ```
-//! # #[cfg(not(feature = "infer_name"))] use approx::*;
-//! # #[cfg(feature = "infer_name")] use approxim::*;
+//! # use approx::*;
 //! # use approx_derive::*;
 //! #[derive(AbsDiffEq, PartialEq, Debug)]
 //! struct Parameter {
@@ -510,8 +489,7 @@
 //! will fail.
 //!
 //! ```should_panic
-//! # #[cfg(not(feature = "infer_name"))] use approx::*;
-//! # #[cfg(feature = "infer_name")] use approxim::*;
+//! # use approx::*;
 //! # use approx_derive::*;
 //! #[derive(AbsDiffEq, PartialEq, Debug)]
 //! #[approx(epsilon_type = f64)]
