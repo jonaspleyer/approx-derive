@@ -16,7 +16,7 @@ quote = "1.0.37"
 syn = { version = "2.0.76", features = ["default", "full"] }
 
 [dev-dependencies]
-approx = "0.5.1"
+approx = { git = "https://github.com/brendanzab/approx", branch = "approxim-merge", default_features = false, features = ["tuple_impl", "array_impl"] }
 approxim = { version = "0.6", features = ["tuple_impl"], default-features=false }
 
 [features]
