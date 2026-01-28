@@ -14,3 +14,7 @@ This allows to quickly derive implementations for comparing these types with the
 # Documentation
 Visit [docs.rs](https://docs.rs/approx-derive/latest/approx_derive/) to view the documentation.
 
+# Note
+This crate was designed to be operated with the `approx` and `approxim` crates.
+With the archiving of `approxim`, we will no longer support this crate actively and version `0.2.8`
+remains the last supported compatible version.
