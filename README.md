@@ -1,3 +1,6 @@
+# ❗ Note ❗
+This crate has been merged into the [`approx`](https://github.com/brendanzab/approx/) crate where it will be maintained from now on.
+
 [![Apache License](https://img.shields.io/github/license/jonaspleyer/approx-derive?style=flat-square)](https://opensource.org/license/apache-2-0)
 [![Test](https://img.shields.io/github/actions/workflow/status/jonaspleyer/approx-derive/test.yml?label=Test&style=flat-square)](https://github.com/jonaspleyer/approx-derive/actions)
 [![Crate](https://img.shields.io/crates/v/approx-derive.svg?style=flat-square)](https://crates.io/crates/approx-derive)
